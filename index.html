@@ -28,6 +28,15 @@
   .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:50; background:var(--teal); color:var(--paper); padding:8px 16px; border-radius:999px; font-size:13px; box-shadow:0 6px 16px rgba(0,0,0,.15); display:none;}
   .toast.error{background:var(--brick);}
   .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px;}
+  .vc-card{background:linear-gradient(135deg, #0e5c4c, #06251d); color:#fff; border-radius:16px; padding:22px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18);}
+  .vc-card .vc-logo{width:56px; height:56px; border-radius:12px; object-fit:cover; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,.25);}
+  .vc-card .vc-name{font-family:'Fraunces',serif; font-weight:700; font-size:20px;}
+  .vc-card .vc-tagline{font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.75; margin:2px 0 12px;}
+  .vc-card .vc-line{font-size:12px; opacity:.9; line-height:1.6;}
+  .greet-card{background:linear-gradient(150deg, #b8860b, #7a5a0a); color:#fff; border-radius:16px; padding:26px 18px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18);}
+  .greet-card .greet-title{font-family:'Fraunces',serif; font-weight:700; font-size:24px; margin-top:8px;}
+  .greet-card .greet-sub{font-size:12px; opacity:.9; margin:6px 0 16px;}
+  .greet-card .greet-shop{font-size:11px; text-transform:uppercase; letter-spacing:.06em; opacity:.75;}
   .card.dashed{border-style:dashed;}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .stat-label{font-size:10px; text-transform:uppercase; letter-spacing:.05em; opacity:.6;}
@@ -131,6 +140,20 @@
     <div class="login-title">Guli Shop</div>
     <div class="login-sub">Easy Shopping, Easy Installments</div>
 
+    <!-- FIREBASE ACCOUNT LOGIN (shown once per device, before PIN) -->
+    <div id="loginFirebase" style="display:none;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:10px;">Apna account email/password se login karein</div>
+      <div class="field" style="text-align:left; margin-bottom:8px;">
+        <input id="fbEmail" type="email" autocomplete="username" style="letter-spacing:normal; text-align:left; width:100%; padding:10px; border-radius:10px; border:1px solid var(--line);" placeholder="Email">
+      </div>
+      <div class="field" style="text-align:left; margin-bottom:8px;">
+        <input id="fbPassword" type="password" autocomplete="current-password" style="letter-spacing:normal; text-align:left; width:100%; padding:10px; border-radius:10px; border:1px solid var(--line);" placeholder="Password">
+      </div>
+      <div class="login-error" id="fbError"></div>
+      <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="firebaseLogin()">Login Karein</button>
+      <div style="font-size:11px; opacity:.55; margin-top:4px;">Yeh account Firebase Console &gt; Authentication &gt; Users mein banaya gaya hai.</div>
+    </div>
+
     <!-- SETUP MODE (first run — create a PIN) -->
     <div id="loginSetup" style="display:none;">
       <div style="font-size:13px; font-weight:600; margin-bottom:10px;">Naya 4-digit PIN banayein</div>
@@ -146,6 +169,7 @@
       <div class="pin-dots" id="loginDots"><span></span><span></span><span></span><span></span></div>
       <div class="login-error" id="loginError"></div>
       <div class="keypad" id="loginKeypad"></div>
+      <button class="login-link" id="biometricLoginBtn" style="display:none;" onclick="loginWithBiometric()">👆 Fingerprint / Face se unlock karein</button>
       <button class="login-link" onclick="startForgotPin()">PIN bhool gaye?</button>
     </div>
 
@@ -244,10 +268,44 @@
       <div class="card">
         <div style="font-weight:600; font-size:13px; margin-bottom:10px;">🔐 Security</div>
         <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" onclick="openChangePin()">PIN Tabdeel Karein</button>
+        <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" id="biometricSetupBtn" onclick="registerBiometric()">👆 Fingerprint / Face Unlock Enable Karein</button>
         <button class="btn btn-outline btn-block" onclick="lockApp()">Abhi Lock Karein</button>
       </div>
       <div class="card" style="background:var(--paper-dark); border:none; font-size:11px; opacity:.65; line-height:1.6;">
         Business contact — EasyPaisa: 03158019948 · JazzCash: 03333909816
+      </div>
+    </div>
+
+    <!-- CARDS: Visiting Card + Greetings -->
+    <div class="view" id="view-cards">
+      <div class="card">
+        <div style="font-weight:600; font-size:14px; margin-bottom:10px;">💳 Visiting Card</div>
+        <div id="visitCardPreview" class="vc-card">
+          <img id="vcLogo" class="vc-logo" alt="">
+          <div class="vc-name" id="vcName"></div>
+          <div class="vc-tagline" id="vcTagline"></div>
+          <div class="vc-line" id="vcPhone"></div>
+          <div class="vc-line" id="vcAddr"></div>
+        </div>
+        <button class="btn btn-gold btn-block" style="margin-top:12px;" onclick="downloadVisitCard()">⬇ Visiting Card Download Karein</button>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:600; font-size:14px; margin-bottom:10px;">🎉 Greetings</div>
+        <select id="greetingSelect" class="field-input" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--line); margin-bottom:12px;" onchange="renderGreeting()">
+          <option value="thankyou">Thank You for Business</option>
+          <option value="eid">Eid Mubarak</option>
+          <option value="ramzan">Ramzan Mubarak</option>
+          <option value="newyear">New Year Mubarak</option>
+          <option value="azadi">Jashn-e-Azadi (14 August)</option>
+        </select>
+        <div id="greetingPreview" class="greet-card">
+          <img id="grLogo" class="vc-logo" alt="">
+          <div class="greet-title" id="grTitle"></div>
+          <div class="greet-sub" id="grSub"></div>
+          <div class="greet-shop" id="grShop"></div>
+        </div>
+        <button class="btn btn-teal btn-block" style="margin-top:12px;" onclick="downloadGreeting()">⬇ Greeting Card Download Karein</button>
       </div>
     </div>
 
@@ -260,6 +318,7 @@
     <button data-tab="parties" onclick="showView('parties')">👥<span>Parties</span></button>
     <button data-tab="reports" onclick="showView('reports')">📄<span>Reports</span></button>
     <button data-tab="backup" onclick="showView('backup')">⬇<span>Backup</span></button>
+    <button data-tab="cards" onclick="showView('cards')">🎴<span>Cards</span></button>
   </div>
 </nav>
 
@@ -375,7 +434,10 @@ try{
     db = firebase.firestore();
     auth = firebase.auth();
     db.enablePersistence({ synchronizeTabs:true }).catch(()=>{});
-    auth.signInAnonymously().catch(()=>{});
+    /* Email/Password login (see Firebase Console > Authentication > Users) —
+       session persists on this device (LOCAL), so login is needed only once
+       per device/browser. Day-to-day unlock still uses the PIN / biometric. */
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
   }
 }catch(e){
   console.warn('Firebase config set nahi hai — sirf is browser mein (offline) data save hoga.', e);
@@ -535,6 +597,8 @@ function waNumberFor(contact){
 }
 const SHOP_OWNER = 'Fazul Khan Chandio';
 const SHOP_PHONE = '03333909816';
+const SHOP_PHONE2 = '03158019948';
+const SHOP_ADDRESS = 'Near Piple Chownk, Kamber';
 function receiptSignatureBlock(receiptNo){
   const rn = receiptNo || ('RJ' + String(Math.floor(1000+Math.random()*89999)));
   return '——————————————\n'
@@ -635,6 +699,80 @@ function sendReminderWhatsApp(partyId){
   const due = computeNextDue(party);
   const bal = partyBalance(party.id).balance;
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(reminderMessage(party,due,bal)), '_blank');
+}
+
+/* ===================== VISITING CARD ===================== */
+function renderVisitCard(){
+  const headerImg = document.querySelector('header .inner img');
+  const vcLogo = document.getElementById('vcLogo');
+  if(vcLogo && headerImg) vcLogo.src = headerImg.src;
+  document.getElementById('vcName').textContent = 'Guli Shop and Installment';
+  document.getElementById('vcTagline').textContent = 'Easy Shopping, Easy Installments';
+  document.getElementById('vcPhone').textContent = '📞 ' + SHOP_PHONE2 + '  ·  ' + SHOP_PHONE;
+  document.getElementById('vcAddr').textContent = '📍 ' + SHOP_ADDRESS;
+}
+function downloadVisitCard(){
+  const div = document.getElementById('visitCardPreview');
+  if(typeof html2canvas === 'undefined'){
+    showToast('Image library load nahi hui — internet check karein', 'error');
+    return;
+  }
+  html2canvas(div, {backgroundColor:'#0e5c4c', scale:3}).then(canvas => {
+    canvas.toBlob(blob => {
+      const file = new File([blob], 'guli-shop-visiting-card.jpg', {type:'image/jpeg'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'Guli Shop Visiting Card'}).catch(()=>{});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Visiting Card download ho gayi');
+      }
+    }, 'image/jpeg', 0.95);
+  }).catch(()=>{ showToast('Image banane mein masla hua', 'error'); });
+}
+
+/* ===================== GREETINGS ===================== */
+const GREETINGS = {
+  thankyou: { title: 'Thank You!', sub: 'Aap ke business ke liye shukriya' },
+  eid: { title: 'Eid Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad' },
+  ramzan: { title: 'Ramzan Mubarak', sub: 'Yeh mahe mubarak aap ke liye barkaton wala ho' },
+  newyear: { title: 'New Year Mubarak', sub: 'Naya saal aap ke liye khushiyaan laaye' },
+  azadi: { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad' }
+};
+function renderGreeting(){
+  const headerImg = document.querySelector('header .inner img');
+  const grLogo = document.getElementById('grLogo');
+  if(grLogo && headerImg) grLogo.src = headerImg.src;
+  const key = document.getElementById('greetingSelect').value;
+  const g = GREETINGS[key] || GREETINGS.thankyou;
+  document.getElementById('grTitle').textContent = g.title;
+  document.getElementById('grSub').textContent = g.sub;
+  document.getElementById('grShop').textContent = 'Guli Shop and Installment — ' + SHOP_PHONE2;
+}
+function downloadGreeting(){
+  const div = document.getElementById('greetingPreview');
+  if(typeof html2canvas === 'undefined'){
+    showToast('Image library load nahi hui — internet check karein', 'error');
+    return;
+  }
+  html2canvas(div, {backgroundColor:'#b8860b', scale:3}).then(canvas => {
+    canvas.toBlob(blob => {
+      const file = new File([blob], 'guli-shop-greeting.jpg', {type:'image/jpeg'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'Guli Shop Greeting'}).catch(()=>{});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Greeting card download ho gayi');
+      }
+    }, 'image/jpeg', 0.95);
+  }).catch(()=>{ showToast('Image banane mein masla hua', 'error'); });
 }
 
 /* ===================== THERMAL PRINT ===================== */
@@ -784,6 +922,7 @@ function showView(name){
   if(name==='parties') renderPartiesList();
   if(name==='reports') renderReports();
   if(name==='backup') renderBackup();
+  if(name==='cards'){ renderVisitCard(); renderGreeting(); }
 }
 
 /* ===================== ADD PARTY MODAL ===================== */
@@ -1094,17 +1233,105 @@ function initAuth(){
   if(LOGIN_BG_B64.length > 100){
     document.documentElement.style.setProperty('--login-bg', "url('data:image/jpeg;base64,"+LOGIN_BG_B64+"')");
   }
+  setupInactivityWatch();
+
+  if(auth){
+    // Wait to know if a Firebase session is already persisted on this device.
+    auth.onAuthStateChanged(user => {
+      document.getElementById('loginFirebase').style.display = 'none';
+      if(user){
+        showPinOrSetup();
+      } else {
+        document.getElementById('loginSetup').style.display='none';
+        document.getElementById('loginEnter').style.display='none';
+        document.getElementById('loginFirebase').style.display='block';
+      }
+    });
+  } else {
+    // No Firebase configured — go straight to local PIN/setup.
+    showPinOrSetup();
+  }
+}
+
+function showPinOrSetup(){
   const hasPin = !!localStorage.getItem(PIN_KEY);
   if(hasPin){
     document.getElementById('loginSetup').style.display='none';
     document.getElementById('loginEnter').style.display='block';
     buildKeypad(document.getElementById('loginKeypad'), loginDigit, loginDelete);
+    updateBiometricButton();
   } else {
     document.getElementById('loginEnter').style.display='none';
     document.getElementById('loginSetup').style.display='block';
     buildKeypad(document.getElementById('setupKeypad'), setupDigit, setupDelete);
   }
-  setupInactivityWatch();
+}
+
+/* ---- Firebase email/password login (once per device) ---- */
+function firebaseLogin(){
+  const email = document.getElementById('fbEmail').value.trim();
+  const pass = document.getElementById('fbPassword').value;
+  const errEl = document.getElementById('fbError');
+  errEl.textContent = '';
+  if(!email || !pass){ errEl.textContent = 'Email aur Password darj karein'; return; }
+  if(!auth){ errEl.textContent = 'Firebase set nahi hai'; return; }
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(()=>{ document.getElementById('fbPassword').value=''; })
+    .catch(err => { errEl.textContent = 'Login nakaam: ' + (err.message || 'Ghalat email/password'); });
+}
+
+/* ---- Biometric (fingerprint / face) unlock via WebAuthn ---- */
+const BIO_CRED_KEY = 'guli_shop_bio_cred_id_v1';
+function bioSupported(){
+  return !!(window.PublicKeyCredential && navigator.credentials);
+}
+function updateBiometricButton(){
+  const btn = document.getElementById('biometricLoginBtn');
+  if(!btn) return;
+  btn.style.display = (bioSupported() && localStorage.getItem(BIO_CRED_KEY)) ? 'block' : 'none';
+}
+function randomBytes(len){
+  const a = new Uint8Array(len);
+  crypto.getRandomValues(a);
+  return a;
+}
+function registerBiometric(){
+  if(!bioSupported()){ showToast('Yeh device/browser biometric support nahi karta', 'error'); return; }
+  const userId = randomBytes(16);
+  navigator.credentials.create({
+    publicKey: {
+      challenge: randomBytes(32),
+      rp: { name: 'Guli Shop' },
+      user: { id: userId, name: 'guli-shop-user', displayName: SHOP_OWNER },
+      pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+      authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required' },
+      timeout: 60000
+    }
+  }).then(cred => {
+    const idB64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+    localStorage.setItem(BIO_CRED_KEY, idB64);
+    updateBiometricButton();
+    showToast('Fingerprint/Face unlock enable ho gaya ✅');
+  }).catch(err => {
+    showToast('Biometric enable nahi ho saka: ' + (err.message||''), 'error');
+  });
+}
+function loginWithBiometric(){
+  const idB64 = localStorage.getItem(BIO_CRED_KEY);
+  if(!idB64) return;
+  const rawId = Uint8Array.from(atob(idB64), c => c.charCodeAt(0));
+  navigator.credentials.get({
+    publicKey: {
+      challenge: randomBytes(32),
+      allowCredentials: [{ id: rawId, type:'public-key' }],
+      userVerification: 'required',
+      timeout: 60000
+    }
+  }).then(()=>{
+    completeUnlock();
+  }).catch(err => {
+    document.getElementById('loginError').textContent = 'Biometric unlock nakaam: ' + (err.message||'');
+  });
 }
 
 /* ---- first-time setup ---- */
@@ -1179,6 +1406,7 @@ function lockApp(){
     document.getElementById('loginEnter').style.display='block';
     updateDots('loginDots',0);
     buildKeypad(document.getElementById('loginKeypad'), loginDigit, loginDelete);
+    updateBiometricButton();
   }
 }
 
