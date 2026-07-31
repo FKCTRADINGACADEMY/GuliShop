@@ -248,12 +248,16 @@
 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
+      <div class="row-between" style="margin-bottom:8px;">
+        <span style="font-size:12px; opacity:.6; font-weight:600;">Balance dikhayein ya chupayein</span>
+        <button id="balanceToggleBtn" onclick="toggleBalanceVisibility()" title="Balance chupayein/dikhayein" style="background:none; border:1px solid var(--line); border-radius:10px; width:38px; height:34px; font-size:16px; cursor:pointer;">👁</button>
+      </div>
       <div class="grid2">
-        <div class="card"><div class="stat-label">Aaj Wasooli</div><div class="stat-value mono" id="statToday">Rs. 0</div></div>
-        <div class="card"><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
-        <div class="card"><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Aaj Wasooli</div><div class="stat-value mono" id="statToday">Rs. 0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
         <div class="card"><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
-        <div class="card" style="grid-column:1 / -1;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="grid-column:1 / -1; cursor:pointer;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
       </div>
       <div class="section-title">Recent Payments</div>
       <div id="recentPayments"></div>
@@ -1443,14 +1447,30 @@ function submitAddParty(){
   setTimeout(()=>downloadPartyPDF(party.id), 300);
 }
 
+/* ===================== DASHBOARD BALANCE SHOW/HIDE ===================== */
+const BAL_HIDE_KEY = 'guli_shop_balance_hidden_v1';
+let balanceHidden = localStorage.getItem(BAL_HIDE_KEY) === '1';
+function maskMoney(text){ return balanceHidden ? '•••••' : text; }
+function updateBalanceToggleIcon(){
+  const btn = document.getElementById('balanceToggleBtn');
+  if(btn) btn.textContent = balanceHidden ? '🙈' : '👁';
+}
+function toggleBalanceVisibility(){
+  balanceHidden = !balanceHidden;
+  try{ localStorage.setItem(BAL_HIDE_KEY, balanceHidden ? '1' : '0'); }catch(e){}
+  updateBalanceToggleIcon();
+  renderDashboard();
+}
+
 /* ===================== RENDER: DASHBOARD ===================== */
 function renderDashboard(){
   const t = computeTotals();
-  document.getElementById('statToday').textContent = fmtMoney(t.todayCollection);
-  document.getElementById('statOutstanding').textContent = fmtMoney(t.totalOutstanding);
-  document.getElementById('statCollected').textContent = fmtMoney(t.totalCollected);
+  updateBalanceToggleIcon();
+  document.getElementById('statToday').textContent = maskMoney(fmtMoney(t.todayCollection));
+  document.getElementById('statOutstanding').textContent = maskMoney(fmtMoney(t.totalOutstanding));
+  document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollected));
   document.getElementById('statActive').textContent = t.activeParties;
-  document.getElementById('statPayable').textContent = fmtMoney(t.totalPayableOutstanding);
+  document.getElementById('statPayable').textContent = maskMoney(fmtMoney(t.totalPayableOutstanding));
 
   const recent = [...payments].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const box = document.getElementById('recentPayments');
@@ -1464,7 +1484,7 @@ function renderDashboard(){
           <div style="font-weight:600; font-size:13px;">${party?.name || 'Unknown'}</div>
           <div style="font-size:11px; opacity:.6;">${fmtDate(p.date)} · ${p.method}</div>
         </div>
-        <div class="mono" style="color:var(--teal); font-weight:700; font-size:13px;">+${fmtMoney(p.amount)}</div>
+        <div class="mono" style="color:var(--teal); font-weight:700; font-size:13px;">${maskMoney('+' + fmtMoney(p.amount))}</div>
       </div>`;
     }).join('');
   }
@@ -1713,6 +1733,54 @@ function simpleHash(str){
   return h.toString(16);
 }
 
+/* ---- Strong hashing (SHA-256 + per-device random salt) for PIN/security-answer.
+   Older installs stored a weak simpleHash() value (short hex string); the code
+   below recognises that (isLegacyHash) and silently upgrades it to the strong
+   hash the next time the user unlocks successfully, so nobody is forced to
+   reset their PIN. ---- */
+const CRYPTO_SALT_KEY = 'guli_shop_crypto_salt_v1';
+function getOrCreateSalt(){
+  let s = localStorage.getItem(CRYPTO_SALT_KEY);
+  if(!s){
+    s = Array.from(randomBytes(16)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    try{ localStorage.setItem(CRYPTO_SALT_KEY, s); }catch(e){}
+  }
+  return s;
+}
+async function secureHash(value){
+  if(!(window.crypto && window.crypto.subtle)){
+    // Very old/insecure browser context (e.g. non-HTTPS): fall back safely.
+    return simpleHash(getOrCreateSalt() + ':' + value);
+  }
+  const salt = getOrCreateSalt();
+  const bytes = new TextEncoder().encode(salt + '::' + value);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function isLegacyHash(h){ return !!h && h.length < 20; }
+
+/* ---- PIN brute-force lockout: after 5 wrong PIN attempts, lock the login
+   screen for a growing amount of time (doubling up to 15 minutes). This is
+   shared by the login screen and the "change PIN" old-PIN check. ---- */
+const PIN_FAIL_KEY = 'guli_shop_pin_fail_v1';
+function getFailState(){
+  try{ return JSON.parse(localStorage.getItem(PIN_FAIL_KEY)) || {count:0, lockUntil:0}; }
+  catch(e){ return {count:0, lockUntil:0}; }
+}
+function setFailState(s){ try{ localStorage.setItem(PIN_FAIL_KEY, JSON.stringify(s)); }catch(e){} }
+function isLockedOut(){ return Date.now() < (getFailState().lockUntil || 0); }
+function lockoutRemainingSec(){ return Math.max(0, Math.ceil((getFailState().lockUntil - Date.now())/1000)); }
+function registerFailedPinAttempt(){
+  const s = getFailState();
+  s.count = (s.count||0) + 1;
+  if(s.count >= 5){
+    const steps = s.count - 4;
+    s.lockUntil = Date.now() + Math.min(30 * Math.pow(2, steps-1), 15*60) * 1000;
+  }
+  setFailState(s);
+}
+function clearFailState(){ setFailState({count:0, lockUntil:0}); }
+
 let setupBuf = '', setupStage = 1, setupFirstPin = '';
 let loginBuf = '';
 let cpBuf = '', cpStage = 1, cpNewPin = '';
@@ -1734,6 +1802,7 @@ function updateDots(containerId, len){
 }
 
 function initAuth(){
+  updateBalanceToggleIcon();
   const headerImg = document.querySelector('header .inner img');
   const loginLogo = document.getElementById('loginLogo');
   if(loginLogo && headerImg) loginLogo.src = headerImg.src;
@@ -1850,7 +1919,7 @@ function loginWithBiometric(){
 }
 
 /* ---- first-time setup ---- */
-function setupDigit(d){
+async function setupDigit(d){
   if(setupBuf.length>=4) return;
   setupBuf += d;
   updateDots('setupDots1', setupBuf.length);
@@ -1862,7 +1931,8 @@ function setupDigit(d){
       setTimeout(()=>updateDots('setupDots1',0), 150);
     } else {
       if(setupBuf === setupFirstPin){
-        localStorage.setItem(PIN_KEY, simpleHash(setupBuf));
+        localStorage.setItem(PIN_KEY, await secureHash(setupBuf));
+        clearFailState();
         askSecurityQuestion();
       } else {
         document.getElementById('setupError').textContent = 'PIN match nahi hua, dobara koshish karein';
@@ -1875,28 +1945,49 @@ function setupDigit(d){
 }
 function setupDelete(){ setupBuf = setupBuf.slice(0,-1); updateDots('setupDots1', setupBuf.length); }
 
-function askSecurityQuestion(){
+async function askSecurityQuestion(){
   let q = window.prompt('Security sawal likhein (agar PIN bhool jayein to yeh madad karega):', 'Aapke walid ka naam?');
   if(!q) q = 'Aapka pasandeeda number kya hai?';
   let a = window.prompt('"'+q+'" ka jawab likhein:');
   if(!a) a = '0000';
   localStorage.setItem(SECQ_KEY, q);
-  localStorage.setItem(SECA_KEY, simpleHash(a.trim().toLowerCase()));
+  localStorage.setItem(SECA_KEY, await secureHash(a.trim().toLowerCase()));
   showToast('PIN set ho gaya ✅');
   completeUnlock();
 }
 
 /* ---- login ---- */
-function loginDigit(d){
+function lockoutMessage(){
+  const s = lockoutRemainingSec();
+  const mins = Math.floor(s/60), secs = s%60;
+  const when = mins>0 ? (mins+' minute '+secs+' second') : (secs+' second');
+  return '🔒 Bohat si ghalat koshishon ki wajah se band — ' + when + ' baad dobara koshish karein';
+}
+async function loginDigit(d){
+  if(isLockedOut()){
+    document.getElementById('loginError').textContent = lockoutMessage();
+    return;
+  }
   if(loginBuf.length>=4) return;
   loginBuf += d;
   updateDots('loginDots', loginBuf.length);
   document.getElementById('loginError').textContent='';
   if(loginBuf.length===4){
-    if(simpleHash(loginBuf) === localStorage.getItem(PIN_KEY)){
+    const attemptedPin = loginBuf;
+    const stored = localStorage.getItem(PIN_KEY);
+    let match = false;
+    if(isLegacyHash(stored)){
+      match = simpleHash(attemptedPin) === stored;
+      if(match) localStorage.setItem(PIN_KEY, await secureHash(attemptedPin)); // silent upgrade
+    } else {
+      match = (await secureHash(attemptedPin)) === stored;
+    }
+    if(match){
+      clearFailState();
       completeUnlock();
     } else {
-      document.getElementById('loginError').textContent = 'Ghalat PIN, dobara koshish karein';
+      registerFailedPinAttempt();
+      document.getElementById('loginError').textContent = isLockedOut() ? lockoutMessage() : 'Ghalat PIN, dobara koshish karein';
       const card = document.querySelector('.login-card');
       card.style.animation='none'; void card.offsetWidth; card.style.animation='shake .4s';
       loginBuf='';
@@ -1924,6 +2015,7 @@ function lockApp(){
     updateDots('loginDots',0);
     buildKeypad(document.getElementById('loginKeypad'), loginDigit, loginDelete);
     updateBiometricButton();
+    if(isLockedOut()) document.getElementById('loginError').textContent = lockoutMessage();
   }
 }
 
@@ -1939,10 +2031,13 @@ function cancelForgotPin(){
   document.getElementById('loginForgot').style.display='none';
   document.getElementById('loginEnter').style.display='block';
 }
-function submitForgotAnswer(){
+async function submitForgotAnswer(){
   const a = document.getElementById('forgotAnswer').value.trim().toLowerCase();
-  if(a.length>0 && simpleHash(a) === localStorage.getItem(SECA_KEY)){
+  const storedA = localStorage.getItem(SECA_KEY);
+  const okAnswer = a.length>0 && (isLegacyHash(storedA) ? simpleHash(a) === storedA : (await secureHash(a)) === storedA);
+  if(okAnswer){
     localStorage.removeItem(PIN_KEY);
+    clearFailState();
     document.getElementById('loginForgot').style.display='none';
     document.getElementById('loginEnter').style.display='none';
     document.getElementById('loginSetup').style.display='block';
@@ -1966,18 +2061,33 @@ function openChangePin(){
   document.getElementById('changePinModal').style.display='flex';
 }
 function closeChangePin(){ document.getElementById('changePinModal').style.display='none'; }
-function cpDigit(d){
+async function cpDigit(d){
+  if(cpStage===1 && isLockedOut()){
+    document.getElementById('cpError').textContent = lockoutMessage();
+    return;
+  }
   if(cpBuf.length>=4) return;
   cpBuf += d; updateDots('cpDots', cpBuf.length);
   document.getElementById('cpError').textContent='';
   if(cpBuf.length===4){
     if(cpStage===1){
-      if(simpleHash(cpBuf) === localStorage.getItem(PIN_KEY)){
+      const attempted = cpBuf;
+      const stored = localStorage.getItem(PIN_KEY);
+      let match = false;
+      if(isLegacyHash(stored)){
+        match = simpleHash(attempted) === stored;
+        if(match) localStorage.setItem(PIN_KEY, await secureHash(attempted));
+      } else {
+        match = (await secureHash(attempted)) === stored;
+      }
+      if(match){
+        clearFailState();
         cpStage=2; cpBuf='';
         document.getElementById('cpStageLabel').textContent='Naya PIN darj karein';
         setTimeout(()=>updateDots('cpDots',0),150);
       } else {
-        document.getElementById('cpError').textContent='Purana PIN ghalat hai';
+        registerFailedPinAttempt();
+        document.getElementById('cpError').textContent = isLockedOut() ? lockoutMessage() : 'Purana PIN ghalat hai';
         cpBuf=''; setTimeout(()=>updateDots('cpDots',0),150);
       }
     } else if(cpStage===2){
@@ -1986,7 +2096,7 @@ function cpDigit(d){
       setTimeout(()=>updateDots('cpDots',0),150);
     } else {
       if(cpBuf === cpNewPin){
-        localStorage.setItem(PIN_KEY, simpleHash(cpBuf));
+        localStorage.setItem(PIN_KEY, await secureHash(cpBuf));
         closeChangePin();
         showToast('PIN kamyabi se tabdeel ho gaya ✅');
       } else {
