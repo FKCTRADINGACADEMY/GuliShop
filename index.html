@@ -768,19 +768,7 @@ function shareViaImage(){
   }).catch(()=>{ div.style.display = prevDisplay; showToast('Image banane mein masla hua', 'error'); });
   closeShareModal();
 }
-function openScheduleSms(partyId, evt){
-  if(evt) evt.stopPropagation();
-  const party = parties.find(p=>p.id===partyId);
-  if(!party) return;
-  if(!party.phone){ showToast('Is party ka phone number nahi hai', 'error'); return; }
-  const num = waNumberFor(party.phone);
-  const due = computeNextDue(party);
-  const bal = partyBalance(party.id).balance;
-  const text = reminderMessage(party, due, bal);
-  window.open('sms:'+num+'?body='+encodeURIComponent(text));
-  showToast('Textra khul gaya — ab clock 🕐 icon dabakar date/time set karein', 'success');
-}
-
+function sendReminderWhatsApp(partyId){
   const party = parties.find(p=>p.id===partyId);
   if(!party) return;
   const num = waNumberFor(party.phone);
@@ -1106,7 +1094,7 @@ function confirmZeroDelete(promptMsg){
 }
 function deleteParty(id){
   const bal = partyBalance(id);
-  if(bal.balance > 0.5){
+  if(bal.balance > 0){
     showToast('Delete sirf tab ho sakta hai jab is party ka baqaya 0 ho jaye', 'error');
     return;
   }
@@ -1401,7 +1389,6 @@ function renderPartiesList(){
         </div>
         <div style="display:flex; align-items:flex-start; gap:8px;">
           ${stampHtml}
-          ${(p.phone && b.balance>0) ? `<button class="icon-btn" title="Textra mein Schedule SMS" onclick="openScheduleSms(${p.id}, event)">🕐</button>` : ''}
           <button class="icon-btn" title="Party edit karein" onclick="event.stopPropagation(); openEditPartyModal(${p.id})">✏️</button>
         </div>
       </div>
@@ -1476,7 +1463,6 @@ function renderPartyDetail(id){
         <a class="btn btn-gold btn-sm" style="flex:1; text-align:center;" href="${googleCalendarLink(party, nextDue)}" target="_blank" rel="noreferrer">Calendar Mein Add Karein</a>
         ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="sendReminderWhatsApp(${party.id})">💬 WhatsApp Reminder</button>` : ''}
       </div>
-      ${party.phone ? `<button class="btn btn-outline-teal btn-sm btn-block" style="margin-top:8px;" onclick="openScheduleSms(${party.id})">🕐 Textra Mein Schedule Karein</button>` : ''}
       ${party.phone ? `
       <button class="btn ${party.autoReminder?'btn-gold':'btn-outline-teal'} btn-sm btn-block" style="margin-top:8px;" onclick="toggleAutoReminder(${party.id})">
         ${party.autoReminder ? '🔔 Auto-Reminder: ON (baqaya clear hone tak har qist par yaad dilayega)' : '🔕 Auto-Reminder Schedule Karein'}
@@ -1518,11 +1504,11 @@ function renderPartyDetail(id){
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px; ${bal.balance<=0.5 ? '' : 'opacity:.6;'}">
-      <button class="btn btn-sm" style="background:none; color:var(--teal); padding:0; margin-bottom:10px;" onclick="openEditPartyModal(${party.id})">✏️ Party edit karein</button>
-      ${bal.balance<=0.5
-        ? `<button class="btn btn-block btn-sm" style="border:1px solid var(--brick); color:var(--brick); background:transparent;" onclick="deleteParty(${party.id})">🗑️ Party Delete Karein</button>`
-        : `<button class="btn btn-block btn-sm" style="border:1px solid var(--line); color:var(--ink); background:transparent; opacity:.55; cursor:not-allowed;" disabled title="Delete sirf tab available hoga jab balance 0 ho jaye">🔒 Delete (baqaya ${fmtMoney(bal.balance)} clear hone tak band)</button>`}
+    <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
+      <button class="btn btn-sm" style="background:none; color:var(--teal); opacity:.85; padding:0;" onclick="openEditPartyModal(${party.id})">✏️ Party edit karein</button>
+      ${bal.balance<=0
+        ? `<button class="btn btn-sm" style="background:none; color:var(--brick); opacity:.7; padding:0;" onclick="deleteParty(${party.id})">🗑️ Party delete karein</button>`
+        : `<span style="font-size:11px; opacity:.5;" title="Delete sirf tab available hoga jab balance 0 ho jaye">🔒 Delete (baqaya clear hone tak band)</span>`}
     </div>
   `;
 }
