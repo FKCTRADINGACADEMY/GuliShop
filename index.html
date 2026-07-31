@@ -824,12 +824,17 @@ function toggleAutoReminder(partyId){
     renderPartyDetail(partyId);
   }
 }
-function fireReminderNotification(party, dueDate, balance){
+function fireReminderNotification(party, dueDate, balance, isAdvance){
   try{
-    const n = new Notification('Guli Shop — Qist Reminder', {
-      body: party.name + ' ki qist due hai (' + fmtDate(dueDate) + ') — Baqaya ' + fmtMoney(balance),
+    const title = isAdvance ? 'Guli Shop — Kal Qist Due Hai' : 'Guli Shop — Qist Reminder';
+    const body = isAdvance
+      ? party.name + ' ki qist KAL (' + fmtDate(dueDate) + ') due hai — Baqaya ' + fmtMoney(balance)
+      : party.name + ' ki qist due hai (' + fmtDate(dueDate) + ') — Baqaya ' + fmtMoney(balance);
+    const n = new Notification(title, {
+      body: body,
       icon: 'icon-192.png',
-      tag: 'qist-'+party.id
+      tag: 'qist-'+party.id+'-'+dueDate+(isAdvance?'-adv':''),
+      renotify: true
     });
     n.onclick = function(){
       window.focus();
@@ -842,6 +847,7 @@ function fireReminderNotification(party, dueDate, balance){
 function checkDueReminders(){
   if(!notifPermissionGranted()) return;
   const today = todayStr();
+  const tomorrow = addInterval(today, 'Daily');
   let changed = false;
   parties.forEach(party=>{
     if(!party.autoReminder || !party.phone) return;
@@ -851,17 +857,27 @@ function checkDueReminders(){
       return;
     }
     const due = computeNextDue(party);
+    // 1 din pehle "advance" yaad dahani — taake party ko waqt mil jaye.
+    if(due === tomorrow && party.lastAdvanceNotified !== due){
+      fireReminderNotification(party, due, bal, true);
+      party.lastAdvanceNotified = due;
+      changed = true;
+    }
+    // Due/overdue din par asal reminder.
     if(due <= today && party.lastReminderNotified !== due){
-      fireReminderNotification(party, due, bal);
+      fireReminderNotification(party, due, bal, false);
       party.lastReminderNotified = due;
       changed = true;
     }
   });
   if(changed) save();
 }
-// App khulte hi ek dafa check, phir har 6 ghante mein (jab tak app/tab khuli rahe) dobara check.
+// App khulte/resume hote hi turant check — sirf timer ke bharose nahi baithte.
+// Phir jab tak app/tab khuli rahe, har 1 ghante mein dobara check.
 // (Phone lock/app band hone par background check OS/browser ki apni limitation ki wajah se guarantee nahi hoti.)
-setInterval(checkDueReminders, 6*60*60*1000);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible') checkDueReminders(); });
+window.addEventListener('focus', checkDueReminders);
+setInterval(checkDueReminders, 60*60*1000);
 
 /* ===================== VISITING CARD ===================== */
 const VC_THEMES = ['teal','gold','navy','maroon','sunset','mint'];
@@ -1467,7 +1483,7 @@ function renderPartyDetail(id){
       <button class="btn ${party.autoReminder?'btn-gold':'btn-outline-teal'} btn-sm btn-block" style="margin-top:8px;" onclick="toggleAutoReminder(${party.id})">
         ${party.autoReminder ? '🔔 Auto-Reminder: ON (baqaya clear hone tak har qist par yaad dilayega)' : '🔕 Auto-Reminder Schedule Karein'}
       </button>
-      <div style="font-size:11px; opacity:.55; margin-top:6px;">Notification aane par tap karein — SMS pehle se likha khul jayega, sirf Send dabana hoga.</div>` : ''}
+      <div style="font-size:11px; opacity:.55; margin-top:6px;">1 din pehle aur due wale din notification aayega. Tap karte hi SMS pehle se likha khul jayega — sirf Send dabana hoga.</div>` : ''}
     </div>` : ''}
 
     <div class="card">
