@@ -1796,11 +1796,16 @@ function loginDigit(d){
 }
 function loginDelete(){ loginBuf = loginBuf.slice(0,-1); updateDots('loginDots', loginBuf.length); }
 
-function completeUnlock(){ document.getElementById('loginScreen').classList.add('hidden'); }catch(e){}
+function completeUnlock(){
+  loginBuf=''; setupBuf=''; setupStage=1; setupFirstPin='';
+  document.getElementById('loginScreen').classList.add('hidden');
+  try{ sessionStorage.setItem(SESSION_UNLOCK_KEY, '1'); }catch(e){}
   resetInactivityTimer();
 }
 
-function lockApp(){ /* disabled */ }catch(e){}
+function lockApp(){
+  document.getElementById('loginScreen').classList.remove('hidden');
+  try{ sessionStorage.removeItem(SESSION_UNLOCK_KEY); }catch(e){}
   loginBuf='';
   document.getElementById('loginForgot').style.display='none';
   if(localStorage.getItem(PIN_KEY)){
@@ -1898,7 +1903,7 @@ function setupInactivityWatch(){
   });
 }
 
-document.addEventListener('DOMContentLoaded', function(){ completeUnlock(); });
+document.addEventListener('DOMContentLoaded', initAuth);
 
 /* ---- PWA: register service worker (offline cache + installable app) ---- */
 if('serviceWorker' in navigator){
