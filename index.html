@@ -99,7 +99,7 @@
   .badge.due{background:#AE412822; color:var(--brick);}
   .badge.future{background:#C79A3E22; color:#8a6d1f;}
   nav.bottom{position:fixed; bottom:0; left:0; right:0; background:var(--paper); border-top:1px solid var(--line); z-index:20;}
-  nav.bottom .inner{max-width:480px; margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); text-align:center; font-size:11px;}
+  nav.bottom .inner{max-width:480px; margin:0 auto; display:grid; grid-template-columns:repeat(6,1fr); text-align:center; font-size:10px;}
   nav.bottom button{background:none; border:none; padding:10px 0; color:#8a8271; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;}
   nav.bottom button.active{color:var(--teal); font-weight:700;}
   .modal-backdrop{position:fixed; inset:0; background:rgba(28,43,36,.5); z-index:40; display:flex; align-items:flex-end; justify-content:center;}
@@ -361,6 +361,45 @@
       </div>
     </div>
 
+    <!-- CALCULATOR -->
+    <div class="view" id="view-calculator">
+      <div class="card">
+        <div class="row-between" style="margin-bottom:10px;">
+          <span style="font-weight:600; font-size:14px;">🧮 Calculator</span>
+          <button class="btn-outline btn btn-sm" onclick="calcClear()">Clear</button>
+        </div>
+        <div id="calcDisplay" style="background:var(--paper-dark); border-radius:12px; padding:16px; text-align:right; font-size:28px; font-weight:700; font-family:monospace; margin-bottom:10px; overflow-x:auto; white-space:nowrap;">0</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+          <button class="btn btn-outline" onclick="calcInput('7')">7</button>
+          <button class="btn btn-outline" onclick="calcInput('8')">8</button>
+          <button class="btn btn-outline" onclick="calcInput('9')">9</button>
+          <button class="btn btn-outline-teal" onclick="calcInput('/')">÷</button>
+          <button class="btn btn-outline" onclick="calcInput('4')">4</button>
+          <button class="btn btn-outline" onclick="calcInput('5')">5</button>
+          <button class="btn btn-outline" onclick="calcInput('6')">6</button>
+          <button class="btn btn-outline-teal" onclick="calcInput('*')">×</button>
+          <button class="btn btn-outline" onclick="calcInput('1')">1</button>
+          <button class="btn btn-outline" onclick="calcInput('2')">2</button>
+          <button class="btn btn-outline" onclick="calcInput('3')">3</button>
+          <button class="btn btn-outline-teal" onclick="calcInput('-')">−</button>
+          <button class="btn btn-outline" onclick="calcInput('0')">0</button>
+          <button class="btn btn-outline" onclick="calcInput('.')">.</button>
+          <button class="btn btn-outline" onclick="calcBackspace()">⌫</button>
+          <button class="btn btn-outline-teal" onclick="calcInput('+')">+</button>
+          <button class="btn btn-gold" style="grid-column:span 4;" onclick="calcEquals()">=</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:600; font-size:14px; margin-bottom:10px;">📋 Qist Calculator</div>
+        <div style="font-size:11px; opacity:.6; margin-bottom:10px;">Price, advance aur qiston ki tadaad daal kar har qist ka amount nikalein.</div>
+        <div class="field" style="margin-bottom:8px;"><label>Total Price</label><input type="number" id="qcTotal" oninput="qistCalc()"></div>
+        <div class="field" style="margin-bottom:8px;"><label>Advance</label><input type="number" id="qcAdvance" value="0" oninput="qistCalc()"></div>
+        <div class="field" style="margin-bottom:8px;"><label>Kitni Qistein</label><input type="number" id="qcCount" value="1" oninput="qistCalc()"></div>
+        <div id="qcResult" style="background:var(--paper-dark); border-radius:12px; padding:12px; margin-top:6px; font-size:13px; line-height:1.8;"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -369,6 +408,7 @@
     <button data-tab="dashboard" onclick="showView('dashboard')">📊<span>Dashboard</span></button>
     <button data-tab="parties" onclick="showView('parties')">👥<span>Parties</span></button>
     <button data-tab="reports" onclick="showView('reports')">📄<span>Reports</span></button>
+    <button data-tab="calculator" onclick="showView('calculator')">🧮<span>Calc</span></button>
     <button data-tab="backup" onclick="showView('backup')">⬇<span>Backup</span></button>
     <button data-tab="cards" onclick="showView('cards')">🎴<span>Cards</span></button>
   </div>
@@ -1268,6 +1308,60 @@ function showView(name){
   if(name==='reports') renderReports();
   if(name==='backup') renderBackup();
   if(name==='cards'){ renderVisitCard(); renderGreeting(); }
+  if(name==='calculator'){ qistCalc(); }
+}
+
+/* ===================== CALCULATOR ===================== */
+let calcExpr = '';
+function calcRender(){
+  document.getElementById('calcDisplay').textContent = calcExpr === '' ? '0' : calcExpr;
+}
+function calcInput(v){
+  const ops = ['+','-','*','/'];
+  if(ops.includes(v) && (calcExpr === '' || ops.includes(calcExpr.slice(-1)))){
+    if(calcExpr === '') return; // don't start with an operator
+    calcExpr = calcExpr.slice(0,-1) + v; // replace trailing operator
+  } else {
+    calcExpr += v;
+  }
+  calcRender();
+}
+function calcBackspace(){
+  calcExpr = calcExpr.slice(0,-1);
+  calcRender();
+}
+function calcClear(){
+  calcExpr = '';
+  calcRender();
+}
+function calcEquals(){
+  if(!calcExpr) return;
+  try{
+    // Only digits, dot and + - * / allowed — safe to evaluate.
+    if(!/^[0-9+\-*/.]+$/.test(calcExpr)) throw new Error('bad');
+    const result = Function('"use strict"; return (' + calcExpr + ')')();
+    if(!isFinite(result)) throw new Error('bad');
+    calcExpr = String(Math.round(result*100000)/100000);
+  } catch(e){
+    calcExpr = 'Error';
+  }
+  calcRender();
+}
+
+function qistCalc(){
+  const total = Number(document.getElementById('qcTotal').value)||0;
+  const advance = Number(document.getElementById('qcAdvance').value)||0;
+  const count = Number(document.getElementById('qcCount').value)||0;
+  const box = document.getElementById('qcResult');
+  if(total<=0 || count<=0){ box.innerHTML = '<span style="opacity:.5;">Total price aur qiston ki tadaad daalein</span>'; return; }
+  const remaining = Math.max(total - advance, 0);
+  const perInstallment = remaining / count;
+  box.innerHTML = `
+    <div class="row-between"><span>Total Price</span><span class="mono">${fmtMoney(total)}</span></div>
+    <div class="row-between"><span>Advance</span><span class="mono">${fmtMoney(advance)}</span></div>
+    <div class="row-between"><span>Baqaya (Remaining)</span><span class="mono">${fmtMoney(remaining)}</span></div>
+    <div class="row-between" style="font-weight:700; color:var(--teal);"><span>Har Qist</span><span class="mono">${fmtMoney(perInstallment)}</span></div>
+  `;
 }
 
 /* ===================== ADD PARTY MODAL ===================== */
