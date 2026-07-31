@@ -125,9 +125,9 @@
   #cardReceipt .cr-box .cr-line{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0;}
   #cardReceipt .cr-box .cr-line.total{color:#1e6f5c; font-weight:700;}
   #cardReceipt .cr-desc{font-size:11.5px; margin-top:10px;}
-  #cardReceipt .cr-sign{margin-top:16px; float:right; text-align:center; border:1px solid #e4ddcf; border-radius:10px; padding:10px 16px;}
-  #cardReceipt .cr-sign .cr-scribble{font-family:'Fraunces',serif; font-style:italic; font-size:20px; color:#1e6f5c; border-bottom:1px solid #cbbfa0; padding-bottom:4px; margin-bottom:4px;}
-  #cardReceipt .cr-sign .cr-shopname{font-size:10px; opacity:.6;}
+  #cardReceipt .cr-sign{margin-top:16px; float:right; text-align:center; border:1px solid #e4ddcf; border-radius:10px; padding:8px 16px 6px;}
+  #cardReceipt .cr-sign .cr-scribble{display:block; margin:0 auto 2px;}
+  #cardReceipt .cr-sign .cr-shopname{font-size:10px; opacity:.6; border-top:1px solid #cbbfa0; padding-top:4px; margin-top:2px;}
   #cardReceipt .cr-clear{clear:both;}
   @media print{
     body *{ visibility:hidden; }
@@ -668,6 +668,14 @@ const SHOP_OWNER = 'Fazul Khan Chandio';
 const SHOP_PHONE = '03333909816';
 const SHOP_PHONE2 = '03158019948';
 const SHOP_ADDRESS = 'Near Piple Chownk, Kamber';
+/* Consistent signature mark used on every receipt — a fixed hand-drawn-style
+   scribble (SVG path), not typed text and not randomly generated, so every
+   receipt carries the exact same signature look every single time. */
+const SIGNATURE_SVG = `<svg class="cr-scribble" width="130" height="46" viewBox="0 0 130 46" xmlns="http://www.w3.org/2000/svg">
+  <path d="M6,32 C10,14 14,40 18,22 C21,9 15,5 11,13 C8,19 13,26 20,24 C29,21 26,9 35,13 C45,18 41,33 50,26 C59,19 55,7 66,15 C75,21 71,34 82,28 C93,22 90,10 102,16 C110,20 107,30 117,25"
+        stroke="#1e6f5c" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="6" y1="38" x2="119" y2="38" stroke="#1e6f5c" stroke-width="1.6" opacity="0.5"/>
+</svg>`;
 function receiptSignatureBlock(receiptNo){
   const rn = receiptNo || ('RJ' + String(Math.floor(1000+Math.random()*89999)));
   return '——————————————\n'
@@ -938,7 +946,7 @@ function buildCardReceiptHTML(partyId, paymentId){
     </div>
     <div class="cr-desc"><b>Transaction Description :</b> received via ${payment?payment.method:'-'}</div>
     <div class="cr-sign">
-      <div class="cr-scribble">${SHOP_OWNER}</div>
+      ${SIGNATURE_SVG}
       <div class="cr-shopname">Guli Shop and Installment</div>
     </div>
     <div class="cr-clear"></div>
@@ -1235,7 +1243,9 @@ function submitAddParty(){
   };
   addPartyRecord(party);
   closeAddPartyModal();
-  showToast('Party judd di gayi');
+  showToast('Party judd di gayi — PDF bill taiyar ho raha hai');
+  // Party add hote hi uska PDF bill turant download ho jata hai.
+  setTimeout(()=>downloadPartyPDF(party.id), 300);
 }
 
 /* ===================== RENDER: DASHBOARD ===================== */
@@ -1292,7 +1302,10 @@ function renderPartiesList(){
           <div class="pmeta">${p.item||''} · ${fmtMoney(p.totalAmount)}</div>
           ${p.phone ? `<div class="pmeta">📞 ${p.phone}</div>` : ''}
         </div>
-        ${stampHtml}
+        <div style="display:flex; align-items:flex-start; gap:8px;">
+          ${stampHtml}
+          <button class="icon-btn" title="Party edit karein" onclick="event.stopPropagation(); openEditPartyModal(${p.id})">✏️</button>
+        </div>
       </div>
     </div>`;
   }).join('');
