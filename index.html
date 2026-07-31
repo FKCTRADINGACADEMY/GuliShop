@@ -778,6 +778,91 @@ function sendReminderWhatsApp(partyId){
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(reminderMessage(party,due,bal)), '_blank');
 }
 
+/* ===================== AUTO SMS REMINDER (SCHEDULED) =====================
+   NOTE (limitation): koi bhi browser/PWA phone ki security ki wajah se
+   SMS khud-ba-khud, background mein, bina user ke ek tap kiye send nahi
+   kar sakta (ye Android/iOS ka OS-level rule hai, sirf is app ka nahi).
+   Yahan hum jo "auto" karte hain: jab qist due ho jaye to phone par khud
+   ba khud ek notification aa jati hai (jab tak balance clear na ho, har
+   mahine/hafte apne aap check hoti rahegi). Notification par tap karte
+   hi SMS pehle se likha hua khul jata hai — sirf "Send" dabana hota hai.
+============================================================================ */
+function notifPermissionGranted(){
+  return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+}
+async function requestNotifPermission(){
+  if(typeof Notification === 'undefined'){
+    showToast('Is browser mein notifications support nahi hain', 'error');
+    return false;
+  }
+  if(Notification.permission === 'granted') return true;
+  if(Notification.permission === 'denied'){
+    showToast('Notifications block hain — phone/browser settings se allow karein', 'error');
+    return false;
+  }
+  const res = await Notification.requestPermission();
+  return res === 'granted';
+}
+function toggleAutoReminder(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return;
+  if(!party.phone){ showToast('Reminder ke liye pehle phone number darj karein', 'error'); return; }
+  if(!party.autoReminder){
+    requestNotifPermission().then(granted=>{
+      if(!granted){ showToast('Notification permission zaroori hai auto-reminder ke liye', 'error'); return; }
+      party.autoReminder = true;
+      party.lastReminderNotified = null;
+      save();
+      showToast('Auto-Reminder ON — jab tak baqaya clear na ho, khud yaad dilayega');
+      renderPartyDetail(partyId);
+      checkDueReminders();
+    });
+  } else {
+    party.autoReminder = false;
+    save();
+    showToast('Auto-Reminder OFF kar diya');
+    renderPartyDetail(partyId);
+  }
+}
+function fireReminderNotification(party, dueDate, balance){
+  try{
+    const n = new Notification('Guli Shop — Qist Reminder', {
+      body: party.name + ' ki qist due hai (' + fmtDate(dueDate) + ') — Baqaya ' + fmtMoney(balance),
+      icon: 'icon-192.png',
+      tag: 'qist-'+party.id
+    });
+    n.onclick = function(){
+      window.focus();
+      const num = waNumberFor(party.phone);
+      const text = reminderMessage(party, dueDate, balance);
+      window.open('sms:'+num+'?body='+encodeURIComponent(text));
+    };
+  }catch(e){ /* notification blocked/unsupported — silently skip */ }
+}
+function checkDueReminders(){
+  if(!notifPermissionGranted()) return;
+  const today = todayStr();
+  let changed = false;
+  parties.forEach(party=>{
+    if(!party.autoReminder || !party.phone) return;
+    const bal = partyBalance(party.id).balance;
+    if(bal<=0){
+      if(party.autoReminder){ party.autoReminder = false; changed = true; }
+      return;
+    }
+    const due = computeNextDue(party);
+    if(due <= today && party.lastReminderNotified !== due){
+      fireReminderNotification(party, due, bal);
+      party.lastReminderNotified = due;
+      changed = true;
+    }
+  });
+  if(changed) save();
+}
+// App khulte hi ek dafa check, phir har 6 ghante mein (jab tak app/tab khuli rahe) dobara check.
+// (Phone lock/app band hone par background check OS/browser ki apni limitation ki wajah se guarantee nahi hoti.)
+setInterval(checkDueReminders, 6*60*60*1000);
+
 /* ===================== VISITING CARD ===================== */
 const VC_THEMES = ['teal','gold','navy','maroon','sunset','mint'];
 function renderVisitCard(){
@@ -1378,6 +1463,11 @@ function renderPartyDetail(id){
         <a class="btn btn-gold btn-sm" style="flex:1; text-align:center;" href="${googleCalendarLink(party, nextDue)}" target="_blank" rel="noreferrer">Calendar Mein Add Karein</a>
         ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="sendReminderWhatsApp(${party.id})">💬 WhatsApp Reminder</button>` : ''}
       </div>
+      ${party.phone ? `
+      <button class="btn ${party.autoReminder?'btn-gold':'btn-outline-teal'} btn-sm btn-block" style="margin-top:8px;" onclick="toggleAutoReminder(${party.id})">
+        ${party.autoReminder ? '🔔 Auto-Reminder: ON (baqaya clear hone tak har qist par yaad dilayega)' : '🔕 Auto-Reminder Schedule Karein'}
+      </button>
+      <div style="font-size:11px; opacity:.55; margin-top:6px;">Notification aane par tap karein — SMS pehle se likha khul jayega, sirf Send dabana hoga.</div>` : ''}
     </div>` : ''}
 
     <div class="card">
@@ -1490,6 +1580,7 @@ function renderAll(){
 loadLocal();
 document.getElementById('reportDate').value = todayStr();
 renderAll();
+checkDueReminders(); // sirf tab notify karta hai jab permission pehle se granted ho — koi extra popup nahi
 </script>
 
 <script>
