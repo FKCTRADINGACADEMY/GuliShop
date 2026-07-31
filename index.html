@@ -28,15 +28,34 @@
   .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:50; background:var(--teal); color:var(--paper); padding:8px 16px; border-radius:999px; font-size:13px; box-shadow:0 6px 16px rgba(0,0,0,.15); display:none;}
   .toast.error{background:var(--brick);}
   .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px;}
-  .vc-card{background:linear-gradient(135deg, #0e5c4c, #06251d); color:#fff; border-radius:16px; padding:22px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18);}
-  .vc-card .vc-logo{width:56px; height:56px; border-radius:12px; object-fit:cover; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,.25);}
-  .vc-card .vc-name{font-family:'Fraunces',serif; font-weight:700; font-size:20px;}
-  .vc-card .vc-tagline{font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.75; margin:2px 0 12px;}
-  .vc-card .vc-line{font-size:12px; opacity:.9; line-height:1.6;}
-  .greet-card{background:linear-gradient(150deg, #b8860b, #7a5a0a); color:#fff; border-radius:16px; padding:26px 18px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18);}
-  .greet-card .greet-title{font-family:'Fraunces',serif; font-weight:700; font-size:24px; margin-top:8px;}
-  .greet-card .greet-sub{font-size:12px; opacity:.9; margin:6px 0 16px;}
-  .greet-card .greet-shop{font-size:11px; text-transform:uppercase; letter-spacing:.06em; opacity:.75;}
+  .vc-card{border-radius:16px; padding:24px 20px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18); position:relative; overflow:hidden;}
+  .vc-logo{width:52px; height:52px; border-radius:12px; object-fit:cover; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,.3); background:#fff; padding:4px; position:relative; z-index:1;}
+  .vc-card .vc-name{font-family:'Fraunces',serif; font-weight:700; font-size:20px; position:relative; z-index:1;}
+  .vc-card .vc-tagline{font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.8; margin:2px 0 14px; position:relative; z-index:1;}
+  .vc-card .vc-line{font-size:12px; opacity:.92; line-height:1.7; position:relative; z-index:1;}
+  .vc-card::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 85% -10%, rgba(255,255,255,.16), transparent 55%); pointer-events:none;}
+  .vc-card::after{content:''; position:absolute; left:16px; right:16px; bottom:14px; height:1px; background:rgba(255,255,255,.25);}
+  .vc-theme-teal{background:linear-gradient(135deg, #0e5c4c, #06251d); color:#fff;}
+  .vc-theme-gold{background:linear-gradient(135deg, #d4af37, #7a5a0a); color:#fff;}
+  .vc-theme-navy{background:linear-gradient(135deg, #1b3a6b, #0a1730); color:#fff;}
+  .vc-theme-maroon{background:linear-gradient(135deg, #8a1538, #3a0714); color:#fff;}
+  .vc-theme-sunset{background:linear-gradient(135deg, #e0672a, #7a2b0a); color:#fff;}
+  .vc-theme-mint{background:linear-gradient(135deg, #ffffff, #e6efe9); color:#0e5c4c; box-shadow:0 8px 20px rgba(0,0,0,.12), inset 0 0 0 1px var(--line);}
+  .vc-theme-mint::after{background:rgba(14,92,76,.18);}
+
+  .greet-card{border-radius:18px; padding:30px 18px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18); position:relative; overflow:hidden;}
+  .greet-card .greet-logo-wrap{width:60px; height:60px; margin:0 auto 10px; border-radius:50%; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.3); position:relative; z-index:1;}
+  .greet-card .greet-logo-wrap img{width:44px; height:44px; object-fit:cover; border-radius:10px;}
+  .greet-card .greet-title{font-family:'Fraunces',serif; font-weight:700; font-size:26px; position:relative; z-index:1; text-shadow:0 2px 6px rgba(0,0,0,.2);}
+  .greet-card .greet-sub{font-size:12px; opacity:.92; margin:8px 0 18px; position:relative; z-index:1; line-height:1.5;}
+  .greet-card .greet-divider{width:40px; height:2px; background:rgba(255,255,255,.55); margin:0 auto 12px; position:relative; z-index:1;}
+  .greet-card .greet-shop{font-size:11px; text-transform:uppercase; letter-spacing:.06em; opacity:.8; position:relative; z-index:1;}
+  .greet-card::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 15% 110%, rgba(255,255,255,.18), transparent 55%); pointer-events:none;}
+  .greet-theme-eid{background:linear-gradient(150deg, #0e5c4c, #06251d); color:#fff;}
+  .greet-theme-ramzan{background:linear-gradient(150deg, #2f1b52, #120826); color:#fff;}
+  .greet-theme-newyear{background:linear-gradient(150deg, #1b3a6b, #06132b); color:#fff;}
+  .greet-theme-azadi{background:linear-gradient(150deg, #0a6e3a, #063d20); color:#fff;}
+  .greet-theme-thankyou{background:linear-gradient(150deg, #b8860b, #7a5a0a); color:#fff;}
   .card.dashed{border-style:dashed;}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .stat-label{font-size:10px; text-transform:uppercase; letter-spacing:.05em; opacity:.6;}
@@ -241,12 +260,12 @@
           <span class="mono" style="color:var(--teal); font-weight:700;" id="dailyTotal">Rs. 0</span>
         </div>
         <div id="dailyPaymentsList"></div>
-        <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadDailyCSV()">⬇ CSV Download</button>
+        <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadDailyCSV()">⬇ Google Sheet (CSV) Download</button>
       </div>
       <div class="section-title">All Party Report</div>
       <div class="card">
         <div id="allPartyRows" style="max-height:280px; overflow-y:auto;"></div>
-        <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadAllPartyCSV()">⬇ CSV Download</button>
+        <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadAllPartyCSV()">⬇ Google Sheet (CSV) Download</button>
       </div>
     </div>
 
@@ -280,7 +299,15 @@
     <div class="view" id="view-cards">
       <div class="card">
         <div style="font-weight:600; font-size:14px; margin-bottom:10px;">💳 Visiting Card</div>
-        <div id="visitCardPreview" class="vc-card">
+        <select id="vcStyleSelect" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--line); margin-bottom:12px;" onchange="renderVisitCard()">
+          <option value="teal">Classic Teal</option>
+          <option value="gold">Gold Elegant</option>
+          <option value="navy">Midnight Navy</option>
+          <option value="maroon">Royal Maroon</option>
+          <option value="sunset">Sunset Orange</option>
+          <option value="mint">Minimal White</option>
+        </select>
+        <div id="visitCardPreview" class="vc-card vc-theme-teal">
           <img id="vcLogo" class="vc-logo" alt="">
           <div class="vc-name" id="vcName"></div>
           <div class="vc-tagline" id="vcTagline"></div>
@@ -299,10 +326,11 @@
           <option value="newyear">New Year Mubarak</option>
           <option value="azadi">Jashn-e-Azadi (14 August)</option>
         </select>
-        <div id="greetingPreview" class="greet-card">
-          <img id="grLogo" class="vc-logo" alt="">
+        <div id="greetingPreview" class="greet-card greet-theme-thankyou">
+          <div class="greet-logo-wrap"><img id="grLogo" alt=""></div>
           <div class="greet-title" id="grTitle"></div>
           <div class="greet-sub" id="grSub"></div>
+          <div class="greet-divider"></div>
           <div class="greet-shop" id="grShop"></div>
         </div>
         <button class="btn btn-teal btn-block" style="margin-top:12px;" onclick="downloadGreeting()">⬇ Greeting Card Download Karein</button>
@@ -406,6 +434,7 @@
 <div id="thermalReceipt"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -491,30 +520,39 @@ function cloudArrayRemove(field, item){
     .catch(err => console.warn('Cloud remove failed:', err));
 }
 
-if(BIZ_DOC){
-  BIZ_DOC.onSnapshot({ includeMetadataChanges:true }, function(doc){
-    if(doc.exists){
-      applyData(doc.data());
-      saveLocal();
-      renderAll();
-    }
-    const status = document.getElementById('cloudStatus');
-    if(status){
-      status.textContent = doc.metadata.fromCache
-        ? '📡 Offline cache — internet aane par sync hoga'
-        : '☁️ Live — cloud se realtime sync ho raha hai';
-    }
-  }, function(err){
-    console.warn('Cloud listen failed:', err);
-    const status = document.getElementById('cloudStatus');
-    if(status) status.textContent = 'Cloud connect nahi ho saka — sirf local data';
-  });
-} else {
-  document.addEventListener('DOMContentLoaded', ()=>{
-    const status = document.getElementById('cloudStatus');
-    if(status) status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)';
-  });
+let cloudSyncStarted = false;
+function startCloudSync(){
+  if(cloudSyncStarted) return;
+  cloudSyncStarted = true;
+  if(BIZ_DOC){
+    BIZ_DOC.onSnapshot({ includeMetadataChanges:true }, function(doc){
+      if(doc.exists){
+        applyData(doc.data());
+        saveLocal();
+        renderAll();
+      }
+      const status = document.getElementById('cloudStatus');
+      if(status){
+        status.textContent = doc.metadata.fromCache
+          ? '📡 Offline cache — internet aane par sync hoga'
+          : '☁️ Live — cloud se realtime sync ho raha hai';
+      }
+    }, function(err){
+      console.warn('Cloud listen failed:', err);
+      const status = document.getElementById('cloudStatus');
+      if(status) status.textContent = 'Cloud connect nahi ho saka — sirf local data';
+    });
+  } else {
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const status = document.getElementById('cloudStatus');
+      if(status) status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)';
+    });
+  }
 }
+if(!BIZ_DOC){ startCloudSync(); }
+/* When BIZ_DOC exists, startCloudSync() is called from initAuth() only after
+   Firebase login is confirmed — Firestore security rules require request.auth
+   != null, so listening before login would just fail silently. */
 
 /* ===================== BALANCES ===================== */
 function isPayable(party){ return party && party.partyType === 'payable'; }
@@ -702,6 +740,7 @@ function sendReminderWhatsApp(partyId){
 }
 
 /* ===================== VISITING CARD ===================== */
+const VC_THEMES = ['teal','gold','navy','maroon','sunset','mint'];
 function renderVisitCard(){
   const headerImg = document.querySelector('header .inner img');
   const vcLogo = document.getElementById('vcLogo');
@@ -710,6 +749,10 @@ function renderVisitCard(){
   document.getElementById('vcTagline').textContent = 'Easy Shopping, Easy Installments';
   document.getElementById('vcPhone').textContent = '📞 ' + SHOP_PHONE2 + '  ·  ' + SHOP_PHONE;
   document.getElementById('vcAddr').textContent = '📍 ' + SHOP_ADDRESS;
+  const theme = document.getElementById('vcStyleSelect').value || 'teal';
+  const card = document.getElementById('visitCardPreview');
+  VC_THEMES.forEach(t => card.classList.remove('vc-theme-'+t));
+  card.classList.add('vc-theme-'+theme);
 }
 function downloadVisitCard(){
   const div = document.getElementById('visitCardPreview');
@@ -717,7 +760,7 @@ function downloadVisitCard(){
     showToast('Image library load nahi hui — internet check karein', 'error');
     return;
   }
-  html2canvas(div, {backgroundColor:'#0e5c4c', scale:3}).then(canvas => {
+  html2canvas(div, {backgroundColor:null, scale:3}).then(canvas => {
     canvas.toBlob(blob => {
       const file = new File([blob], 'guli-shop-visiting-card.jpg', {type:'image/jpeg'});
       if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
@@ -736,12 +779,13 @@ function downloadVisitCard(){
 
 /* ===================== GREETINGS ===================== */
 const GREETINGS = {
-  thankyou: { title: 'Thank You!', sub: 'Aap ke business ke liye shukriya' },
-  eid: { title: 'Eid Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad' },
-  ramzan: { title: 'Ramzan Mubarak', sub: 'Yeh mahe mubarak aap ke liye barkaton wala ho' },
-  newyear: { title: 'New Year Mubarak', sub: 'Naya saal aap ke liye khushiyaan laaye' },
-  azadi: { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad' }
+  thankyou: { title: 'Thank You!', sub: 'Aap ke business ke liye shukriya', theme:'thankyou' },
+  eid: { title: 'Eid Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad', theme:'eid' },
+  ramzan: { title: 'Ramzan Mubarak', sub: 'Yeh mahe mubarak aap ke liye barkaton wala ho', theme:'ramzan' },
+  newyear: { title: 'New Year Mubarak', sub: 'Naya saal aap ke liye khushiyaan laaye', theme:'newyear' },
+  azadi: { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad', theme:'azadi' }
 };
+const GREET_THEMES = ['thankyou','eid','ramzan','newyear','azadi'];
 function renderGreeting(){
   const headerImg = document.querySelector('header .inner img');
   const grLogo = document.getElementById('grLogo');
@@ -751,6 +795,9 @@ function renderGreeting(){
   document.getElementById('grTitle').textContent = g.title;
   document.getElementById('grSub').textContent = g.sub;
   document.getElementById('grShop').textContent = 'Guli Shop and Installment — ' + SHOP_PHONE2;
+  const card = document.getElementById('greetingPreview');
+  GREET_THEMES.forEach(t => card.classList.remove('greet-theme-'+t));
+  card.classList.add('greet-theme-'+g.theme);
 }
 function downloadGreeting(){
   const div = document.getElementById('greetingPreview');
@@ -758,7 +805,7 @@ function downloadGreeting(){
     showToast('Image library load nahi hui — internet check karein', 'error');
     return;
   }
-  html2canvas(div, {backgroundColor:'#b8860b', scale:3}).then(canvas => {
+  html2canvas(div, {backgroundColor:null, scale:3}).then(canvas => {
     canvas.toBlob(blob => {
       const file = new File([blob], 'guli-shop-greeting.jpg', {type:'image/jpeg'});
       if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
@@ -911,6 +958,65 @@ function downloadAllPartyCSV(){
     return { Naam:p.name, Phone:p.phone||'', Item:p.item||'', Total:p.totalAmount, Wasool:b.totalPaid, Baqaya:b.balance, Status: b.balance<=0?'Paid':'Pending' };
   });
   exportCSV(rows, 'all-parties-'+todayStr()+'.csv', ['Naam','Phone','Item','Total','Wasool','Baqaya','Status']);
+}
+function downloadPartyCSV(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return;
+  const rows = partyPaymentsSorted(partyId).map(p=>({
+    Date: p.date, Amount: p.amount, Method: p.method
+  }));
+  exportCSV(rows, party.name.replace(/\s+/g,'_')+'-statement-'+todayStr()+'.csv', ['Date','Amount','Method']);
+}
+function downloadPartyPDF(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return;
+  if(typeof window.jspdf === 'undefined'){
+    showToast('PDF library load nahi hui — internet check karein', 'error');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const bal = partyBalance(partyId);
+  const rows = partyPaymentsSorted(partyId);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.text('Guli Shop and Installment', 14, 18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text('Easy Shopping, Easy Installments', 14, 24);
+  doc.text(SHOP_ADDRESS + '  ·  ' + SHOP_PHONE2 + ' / ' + SHOP_PHONE, 14, 29);
+  doc.setDrawColor(180); doc.line(14, 33, 196, 33);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('Party Statement', 14, 42);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  doc.text('Naam: ' + party.name, 14, 50);
+  if(party.phone) doc.text('Phone: ' + party.phone, 14, 56);
+  doc.text('Item: ' + (party.item||'-'), 14, party.phone?62:56);
+  const y0 = party.phone?70:64;
+  doc.text('Total Amount: ' + fmtMoney(party.totalAmount), 14, y0);
+  doc.text('Wasool Shuda: ' + fmtMoney(bal.totalPaid), 14, y0+6);
+  doc.text('Baqaya: ' + fmtMoney(bal.balance), 14, y0+12);
+  doc.text('Report Date: ' + fmtDate(todayStr()), 14, y0+18);
+
+  let y = y0 + 30;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('#', 14, y); doc.text('Date', 26, y); doc.text('Method', 80, y); doc.text('Amount', 170, y, {align:'right'});
+  y += 2; doc.setDrawColor(200); doc.line(14, y, 196, y); y += 6;
+  doc.setFont('helvetica','normal');
+  rows.forEach((p, i) => {
+    if(y > 275){ doc.addPage(); y = 20; }
+    doc.text(String(i+1), 14, y);
+    doc.text(fmtDate(p.date), 26, y);
+    doc.text(p.method || '-', 80, y);
+    doc.text(fmtMoney(p.amount), 170, y, {align:'right'});
+    y += 7;
+  });
+  if(rows.length===0){ doc.text('Abhi koi payment darj nahi hui.', 14, y); y += 7; }
+  y += 4; doc.setDrawColor(200); doc.line(14, y, 196, y);
+  doc.setFont('helvetica','italic'); doc.setFontSize(9);
+  doc.text('Guli Shop ki taraf se aap ka shukriya.', 14, 288);
+
+  doc.save(party.name.replace(/\s+/g,'_')+'-report-'+todayStr()+'.pdf');
 }
 
 /* ===================== VIEW SWITCHING ===================== */
@@ -1116,6 +1222,14 @@ function renderPartyDetail(id){
     <div class="section-title">Ledger History</div>
     <div class="card">${ledgerRows}</div>
 
+    <div class="card">
+      <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📑 Party Report</div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="downloadPartyPDF(${party.id})">📄 PDF Download</button>
+        <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="downloadPartyCSV(${party.id})">📊 Google Sheet (CSV)</button>
+      </div>
+    </div>
+
     <div style="margin-top:14px;">
       <button class="btn btn-sm" style="background:none; color:var(--brick); opacity:.7; padding:0;" onclick="deleteParty(${party.id})">🗑️ Party delete karein</button>
     </div>
@@ -1240,6 +1354,7 @@ function initAuth(){
     auth.onAuthStateChanged(user => {
       document.getElementById('loginFirebase').style.display = 'none';
       if(user){
+        startCloudSync();
         showPinOrSetup();
       } else {
         document.getElementById('loginSetup').style.display='none';
