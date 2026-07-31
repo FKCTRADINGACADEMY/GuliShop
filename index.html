@@ -186,6 +186,7 @@
         <div class="card"><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
         <div class="card"><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
         <div class="card"><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
+        <div class="card" style="grid-column:1 / -1;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
       </div>
       <div class="section-title">Recent Payments</div>
       <div id="recentPayments"></div>
@@ -269,9 +270,33 @@
       <h3>Nayi Party</h3>
       <button class="close-x" onclick="closeAddPartyModal()">✕</button>
     </div>
+    <div class="field"><label>Type</label>
+      <div class="method-row" id="npTypeRow" style="margin:0 0 4px;">
+        <button type="button" class="method-btn active" data-t="receivable" onclick="selectPartyType(this)">📥 Mujhe Milna Hai</button>
+        <button type="button" class="method-btn" data-t="payable" onclick="selectPartyType(this)">📤 Mujhe Dena Hai</button>
+      </div>
+    </div>
     <div class="field"><label>Naam *</label><input id="npName"></div>
     <div class="field"><label>Phone Number</label><input id="npPhone" placeholder="03xx-xxxxxxx"></div>
-    <div class="field"><label>Item (Mobile/AC/TV/Fridge)</label><input id="npItem"></div>
+    <div class="field"><label>Item (Mobile/AC/TV/Fridge)</label><input id="npItem" list="mobileBrandsList" placeholder="Mobile brand ya item likhein"></div>
+    <datalist id="mobileBrandsList">
+      <option value="Samsung">
+      <option value="Vivo">
+      <option value="Oppo">
+      <option value="Infinix">
+      <option value="Tecno">
+      <option value="Realme">
+      <option value="Xiaomi Redmi">
+      <option value="Itel">
+      <option value="Nokia">
+      <option value="Huawei">
+      <option value="Honor">
+      <option value="OnePlus">
+      <option value="iPhone">
+      <option value="Google Pixel">
+      <option value="QMobile">
+      <option value="Motorola">
+    </datalist>
     <div class="grid2">
       <div class="field"><label>Total Amount *</label><input type="number" id="npTotal"></div>
       <div class="field"><label>Advance Paid</label><input type="number" id="npAdvance" value="0"></div>
@@ -284,6 +309,23 @@
     </div>
     <div class="field"><label>Start Date</label><input type="date" id="npStart"></div>
     <button class="btn btn-teal btn-block" onclick="submitAddParty()">Party Save Karein</button>
+  </div>
+</div>
+
+<!-- SHARE RECEIPT MODAL -->
+<div class="modal-backdrop" id="shareReceiptModal" style="display:none;">
+  <div class="modal">
+    <div class="row-between">
+      <h3 style="font-size:16px;">Receipt Share Karein</h3>
+      <button class="close-x" onclick="closeShareModal()">✕</button>
+    </div>
+    <div style="font-size:12px; opacity:.7; margin-bottom:12px;">Payment kamyabi se darj ho gayi. Receipt kis tarah bhejna hai?</div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button class="btn btn-teal btn-block" onclick="shareViaWhatsApp()">💬 WhatsApp Par Bhejein</button>
+      <button class="btn btn-outline-teal btn-block" onclick="shareViaSMS()">✉️ SMS Se Bhejein</button>
+      <button class="btn btn-gold btn-block" onclick="shareViaImage()">🖼️ JPG Image Save/Share Karein</button>
+      <button class="btn btn-outline btn-block" onclick="printThermalReceipt(shareCtx.partyId, shareCtx.paymentId)">🖨️ Thermal Print Karein</button>
+    </div>
   </div>
 </div>
 
@@ -304,6 +346,7 @@
 <!-- Hidden thermal receipt template for printing -->
 <div id="thermalReceipt"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -317,12 +360,12 @@
    5) Wahan jo "firebaseConfig" object milega, use neeche paste kar dein (apiKey, projectId waghera).
    ============================================================ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA7S0Bx_cEgSfZ6y3hwwYD4PAkgEAhzY-w",
+  authDomain: "guli-shop-and-installment.firebaseapp.com",
+  projectId: "guli-shop-and-installment",
+  storageBucket: "guli-shop-and-installment.firebasestorage.app",
+  messagingSenderId: "245316726348",
+  appId: "1:245316726348:web:15d338a7e7974a4197cee9"
 };
 
 let db = null, auth = null;
@@ -412,6 +455,7 @@ if(BIZ_DOC){
 }
 
 /* ===================== BALANCES ===================== */
+function isPayable(party){ return party && party.partyType === 'payable'; }
 function partyBalance(partyId){
   const p = parties.find(x => x.id === partyId);
   if(!p) return { totalPaid:0, balance:0, overpaid:0 };
@@ -422,11 +466,14 @@ function partyBalance(partyId){
 }
 function computeTotals(){
   const today = todayStr();
-  const totalOutstanding = parties.reduce((s,p)=>s+partyBalance(p.id).balance,0);
+  const receivableParties = parties.filter(p=>!isPayable(p));
+  const payableParties = parties.filter(p=>isPayable(p));
+  const totalOutstanding = receivableParties.reduce((s,p)=>s+partyBalance(p.id).balance,0);
+  const totalPayableOutstanding = payableParties.reduce((s,p)=>s+partyBalance(p.id).balance,0);
   const totalCollected = parties.reduce((s,p)=>s+partyBalance(p.id).totalPaid,0);
   const todayCollection = payments.filter(p=>p.date===today).reduce((s,p)=>s+Number(p.amount||0),0);
-  const activeParties = parties.filter(p=>partyBalance(p.id).balance>0).length;
-  return { totalOutstanding, totalCollected, todayCollection, activeParties };
+  const activeParties = receivableParties.filter(p=>partyBalance(p.id).balance>0).length;
+  return { totalOutstanding, totalPayableOutstanding, totalCollected, todayCollection, activeParties };
 }
 
 /* ===================== INSTALLMENT SCHEDULE / REMINDERS ===================== */
@@ -486,6 +533,15 @@ function waNumberFor(contact){
   else if(!digits.startsWith('92') && digits.length===10) digits = '92' + digits;
   return digits;
 }
+const SHOP_OWNER = 'Fazul Khan Chandio';
+const SHOP_PHONE = '03333909816';
+function receiptSignatureBlock(receiptNo){
+  const rn = receiptNo || ('RJ' + String(Math.floor(1000+Math.random()*89999)));
+  return '——————————————\n'
+    + 'Verified by: ' + SHOP_OWNER + '\n'
+    + 'Contact: ' + SHOP_PHONE + '\n'
+    + 'Auto-Signature: ' + rn + ' ✅';
+}
 function receiptMessage(party, payment, remainingBalance){
   return '*Guli Shop — Payment Receipt*\n——————————————\n'
     + 'Assalam-o-Alaikum ' + party.name + ',\n\n'
@@ -495,6 +551,7 @@ function receiptMessage(party, payment, remainingBalance){
     + 'Method: ' + payment.method + '\n'
     + 'Date: ' + fmtDate(payment.date) + '\n'
     + 'Remaining Baqaya: ' + fmtMoney(remainingBalance) + '\n'
+    + receiptSignatureBlock(payment.id ? ('RJ' + String(payment.id).slice(-5)) : null) + '\n'
     + '——————————————\nShukriya!\n*Guli Shop* — Easy Installments Available';
 }
 function reminderMessage(party, dueDate, balance){
@@ -505,13 +562,70 @@ function reminderMessage(party, dueDate, balance){
     + 'Qist Amount: ' + fmtMoney(party.installmentAmount||0) + '\n'
     + 'Due Date: ' + fmtDate(dueDate) + '\n'
     + 'Total Baqaya: ' + fmtMoney(balance) + '\n'
-    + '——————————————\nBarah-e-karam waqt par ada kar dein. Shukriya!';
+    + '——————————————\nBarah-e-karam waqt par ada kar dein. Shukriya!\n'
+    + 'Rabta: ' + SHOP_OWNER + ' — ' + SHOP_PHONE;
 }
 function sendReceiptWhatsApp(party, payment, remainingBalance){
   const num = waNumberFor(party.phone);
   if(!num) return false;
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(receiptMessage(party,payment,remainingBalance)), '_blank');
   return true;
+}
+let shareCtx = { partyId:null, paymentId:null };
+function openShareModal(partyId, paymentId){
+  shareCtx = { partyId, paymentId };
+  document.getElementById('shareReceiptModal').style.display = 'flex';
+}
+function closeShareModal(){ document.getElementById('shareReceiptModal').style.display = 'none'; }
+function shareViaWhatsApp(){
+  const party = parties.find(p=>p.id===shareCtx.partyId);
+  const payment = payments.find(p=>p.id===shareCtx.paymentId);
+  if(!party) return;
+  const bal = partyBalance(party.id).balance;
+  const sent = payment ? sendReceiptWhatsApp(party, payment, bal) : false;
+  if(!sent) showToast('Is party ka phone number nahi hai', 'error');
+  closeShareModal();
+}
+function shareViaSMS(){
+  const party = parties.find(p=>p.id===shareCtx.partyId);
+  const payment = payments.find(p=>p.id===shareCtx.paymentId);
+  if(!party){ closeShareModal(); return; }
+  if(!party.phone){ showToast('Is party ka phone number nahi hai', 'error'); return; }
+  const bal = partyBalance(party.id).balance;
+  const text = payment ? receiptMessage(party, payment, bal) : reminderMessage(party, computeNextDue(party), bal);
+  const num = waNumberFor(party.phone);
+  window.open('sms:'+num+'?body='+encodeURIComponent(text));
+  closeShareModal();
+}
+function shareViaImage(){
+  const party = parties.find(p=>p.id===shareCtx.partyId);
+  if(!party){ closeShareModal(); return; }
+  const div = buildThermalReceiptHTML(shareCtx.partyId, shareCtx.paymentId);
+  if(!div) return;
+  const prevDisplay = div.style.display;
+  div.style.display = 'block';
+  if(typeof html2canvas === 'undefined'){
+    showToast('Image library load nahi hui — internet check karein', 'error');
+    div.style.display = prevDisplay;
+    return;
+  }
+  html2canvas(div, {backgroundColor:'#ffffff', scale:3}).then(canvas => {
+    div.style.display = prevDisplay;
+    canvas.toBlob(blob => {
+      const file = new File([blob], 'receipt-'+party.name.replace(/\s+/g,'_')+'-'+todayStr()+'.jpg', {type:'image/jpeg'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'Guli Shop Receipt', text:'Payment Receipt — '+party.name}).catch(()=>{});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Receipt JPG download ho gayi');
+      }
+    }, 'image/jpeg', 0.95);
+  }).catch(()=>{ div.style.display = prevDisplay; showToast('Image banane mein masla hua', 'error'); });
+  closeShareModal();
 }
 function sendReminderWhatsApp(partyId){
   const party = parties.find(p=>p.id===partyId);
@@ -524,16 +638,17 @@ function sendReminderWhatsApp(partyId){
 }
 
 /* ===================== THERMAL PRINT ===================== */
-function printThermalReceipt(partyId, paymentId){
+function buildThermalReceiptHTML(partyId, paymentId){
   const party = parties.find(p=>p.id===partyId);
-  if(!party) return;
+  if(!party) return null;
   const payment = paymentId ? payments.find(p=>p.id===paymentId) : null;
   const bal = partyBalance(partyId);
   const div = document.getElementById('thermalReceipt');
   div.innerHTML = `
     <div class="center"><b>GULI SHOP</b></div>
     <div class="center">Easy Installments Available</div>
-    <div class="center">Fazul Khan Chandio</div>
+    <div class="center">${SHOP_OWNER}</div>
+    <div class="center">${SHOP_PHONE}</div>
     <hr>
     <div class="rline"><span>Party:</span><span>${party.name}</span></div>
     <div class="rline"><span>Item:</span><span>${party.item||'-'}</span></div>
@@ -546,11 +661,18 @@ function printThermalReceipt(partyId, paymentId){
     <hr>` : ''}
     <div class="rline"><span>Total:</span><span>${fmtMoney(party.totalAmount)}</span></div>
     <div class="rline"><span>Wasool:</span><span>${fmtMoney(bal.totalPaid)}</span></div>
-    <div class="rline"><b>Baqaya:</b><b>${fmtMoney(bal.balance)}</b></div>
+    <div class="rline"><b>${isPayable(party)?'Dena Hai':'Baqaya'}:</b><b>${fmtMoney(bal.balance)}</b></div>
     <hr>
     <div class="center">Shukriya!</div>
+    <div class="center" style="margin-top:4px; font-weight:bold; letter-spacing:1px;">✎ ${payment ? ('RJ'+String(payment.id).slice(-5)) : ('RJ'+String(party.id).slice(-5))}</div>
+    <div class="center" style="font-size:9px;">Auto-verified signature</div>
     <div class="center">${new Date().toLocaleString('en-GB')}</div>
   `;
+  return div;
+}
+function printThermalReceipt(partyId, paymentId){
+  const div = buildThermalReceiptHTML(partyId, paymentId);
+  if(!div) return;
   window.print();
 }
 
@@ -561,8 +683,14 @@ function addPartyRecord(party){
   saveLocal();
   renderAll();
 }
+function confirmZeroDelete(promptMsg){
+  const v = window.prompt(promptMsg + '\n\nConfirm karne ke liye 0 (zero) likhein:');
+  if(v === null) return false;
+  if(Number(v) !== 0){ showToast('Delete cancel — 0 likh kar confirm karna zaroori hai', 'error'); return false; }
+  return true;
+}
 function deleteParty(id){
-  if(!confirm('Pakka delete karna hai? Sab ledger data bhi mit jayega.')) return;
+  if(!confirmZeroDelete('Pakka delete karna hai? Sab ledger data bhi mit jayega.')) return;
   const toRemove = parties.find(p=>p.id===id);
   parties = parties.filter(p=>p.id!==id);
   const removedPayments = payments.filter(p=>p.partyId===id);
@@ -583,6 +711,8 @@ function addPayment(partyId, payment){
 }
 function deletePayment(paymentId){
   const rec = payments.find(p=>p.id===paymentId);
+  if(!rec) return;
+  if(!confirmZeroDelete('Ye payment entry ('+fmtMoney(rec.amount)+') delete karna chahte hain?')) return;
   payments = payments.filter(p=>p.id!==paymentId);
   if(rec) cloudArrayRemove('payments', rec);
   saveLocal();
@@ -657,11 +787,16 @@ function showView(name){
 }
 
 /* ===================== ADD PARTY MODAL ===================== */
+function selectPartyType(btn){
+  document.querySelectorAll('#npTypeRow .method-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
 function openAddPartyModal(){
   ['npName','npPhone','npItem','npTotal','npInstallment'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('npAdvance').value = '0';
   document.getElementById('npFrequency').value = 'Monthly';
   document.getElementById('npStart').value = todayStr();
+  document.querySelectorAll('#npTypeRow .method-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
   document.getElementById('addPartyModal').style.display = 'flex';
 }
 function closeAddPartyModal(){ document.getElementById('addPartyModal').style.display = 'none'; }
@@ -669,9 +804,11 @@ function submitAddParty(){
   const name = document.getElementById('npName').value.trim();
   const totalAmount = document.getElementById('npTotal').value;
   if(!name || !totalAmount){ showToast('Naam aur Total Amount zaroori hai', 'error'); return; }
+  const partyType = document.querySelector('#npTypeRow .method-btn.active')?.dataset.t || 'receivable';
   const party = {
     id: newId(),
     name,
+    partyType,
     phone: document.getElementById('npPhone').value.trim(),
     item: document.getElementById('npItem').value.trim(),
     totalAmount: Number(totalAmount),
@@ -692,6 +829,7 @@ function renderDashboard(){
   document.getElementById('statOutstanding').textContent = fmtMoney(t.totalOutstanding);
   document.getElementById('statCollected').textContent = fmtMoney(t.totalCollected);
   document.getElementById('statActive').textContent = t.activeParties;
+  document.getElementById('statPayable').textContent = fmtMoney(t.totalPayableOutstanding);
 
   const recent = [...payments].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const box = document.getElementById('recentPayments');
@@ -725,9 +863,11 @@ function renderPartiesList(){
   }
   box.innerHTML = filtered.map(p=>{
     const b = partyBalance(p.id);
+    const payable = isPayable(p);
     let stampHtml;
     if(b.overpaid>0) stampHtml = `<span class="stamp" style="color:var(--gold); border-color:var(--gold);">Extra ${fmtMoney(b.overpaid)}</span>`;
-    else if(b.balance<=0) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">Paid</span>`;
+    else if(b.balance<=0) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">${payable?'Ada Ho Gaya':'Paid'}</span>`;
+    else if(payable) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">Dena ${fmtMoney(b.balance)}</span>`;
     else stampHtml = `<span class="stamp" style="color:var(--brick); border-color:var(--brick);">Baqaya ${fmtMoney(b.balance)}</span>`;
     return `<div class="party-item" onclick="openParty(${p.id})">
       <div class="row-between" style="align-items:flex-start;">
@@ -756,9 +896,11 @@ function renderPartyDetail(id){
   const nextDue = computeNextDue(party);
   const schedule = buildSchedule(party);
 
+  const payable = isPayable(party);
   let stampHtml;
   if(bal.overpaid>0) stampHtml = `<span class="stamp" style="color:var(--gold); border-color:var(--gold);">Extra ${fmtMoney(bal.overpaid)}</span>`;
-  else if(bal.balance<=0) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">Paid</span>`;
+  else if(bal.balance<=0) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">${payable?'Ada Ho Gaya':'Paid'}</span>`;
+  else if(payable) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">Mujhe Dena Hai ${fmtMoney(bal.balance)}</span>`;
   else stampHtml = `<span class="stamp" style="color:var(--brick); border-color:var(--brick);">Baqaya ${fmtMoney(bal.balance)}</span>`;
 
   const scheduleRows = schedule.map(r => `
@@ -776,8 +918,7 @@ function renderPartyDetail(id){
         <div><span style="opacity:.6;">${fmtDate(p.date)} · ${p.method}</span></div>
         <div style="display:flex; align-items:center; gap:10px;">
           <span class="mono" style="color:var(--teal); font-weight:700;">${fmtMoney(p.amount)}</span>
-          ${party.phone ? `<button class="icon-btn" title="WhatsApp receipt bhejein" onclick="sendReceiptWhatsApp(${JSON.stringify(party).replace(/"/g,'&quot;')}, ${JSON.stringify(p).replace(/"/g,'&quot;')}, ${bal.balance})">💬</button>` : ''}
-          <button class="icon-btn" title="Thermal print" onclick="printThermalReceipt(${party.id}, ${p.id})">🖨️</button>
+          <button class="icon-btn" title="Bill Share Karein" onclick="openShareModal(${party.id}, ${p.id})">📤</button>
           <button class="icon-btn" title="Delete" onclick="deletePayment(${p.id})">🗑️</button>
         </div>
       </div>`).join('');
@@ -795,7 +936,7 @@ function renderPartyDetail(id){
       <div class="grid2" style="grid-template-columns:1fr 1fr 1fr; margin-top:14px; padding-top:12px; border-top:1px solid var(--line);">
         <div><div class="stat-label">Total</div><div class="mono" style="font-weight:700; font-size:13px;">${fmtMoney(party.totalAmount)}</div></div>
         <div><div class="stat-label">Wasool</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--teal);">${fmtMoney(bal.totalPaid)}</div></div>
-        <div><div class="stat-label">Baqi</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--brick);">${fmtMoney(bal.balance)}</div></div>
+        <div><div class="stat-label">${payable?'Dena Hai':'Baqi'}</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--brick);">${fmtMoney(bal.balance)}</div></div>
       </div>
       ${party.installmentAmount ? `<div style="font-size:12px; opacity:.6; margin-top:8px;">Qist: ${fmtMoney(party.installmentAmount)} / ${party.frequency}</div>` : ''}
     </div>
@@ -853,16 +994,10 @@ function submitPayment(partyId){
   const party = parties.find(p=>p.id===partyId);
   const balBefore = partyBalance(partyId).balance;
   const rec = addPayment(partyId, { amount, method, date });
-  const newBalance = Math.max(balBefore - amount, 0);
-  if(party.phone){
-    const sent = sendReceiptWhatsApp(party, rec, newBalance);
-    if(sent) showToast('Receipt WhatsApp par bhej diya gaya');
-    else showToast('Payment darj ho gayi');
-  } else {
-    showToast('Payment darj ho gayi');
-  }
+  showToast('Payment darj ho gayi');
   document.getElementById('payAmount').value = '';
   renderPartyDetail(partyId);
+  openShareModal(partyId, rec.id);
 }
 
 /* ===================== RENDER: REPORTS ===================== */
