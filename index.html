@@ -113,22 +113,26 @@
   .view.active{display:block;}
   .footer-note{font-size:11px; opacity:.5; text-align:center; margin-top:18px; line-height:1.6;}
   #thermalReceipt{display:none;}
-  #cardReceipt{display:none; width:380px; background:#fff; color:#26332c; font-family:'Inter',sans-serif; padding:20px;}
-  #cardReceipt .cr-head{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
-  #cardReceipt .cr-head img{width:40px; height:40px; border-radius:8px; object-fit:cover;}
-  #cardReceipt .cr-shop{font-weight:700; font-size:14px; color:#26332c;}
-  #cardReceipt .cr-sub{font-size:11px; opacity:.6;}
-  #cardReceipt .cr-title{text-align:center; font-family:'Fraunces',serif; font-weight:700; font-size:19px; margin:10px 0 16px;}
-  #cardReceipt .cr-row{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;}
-  #cardReceipt .cr-row .lbl{opacity:.55;}
-  #cardReceipt .cr-box{border:1px solid #e4ddcf; border-radius:12px; padding:14px; margin:14px 0;}
-  #cardReceipt .cr-box .cr-line{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0;}
-  #cardReceipt .cr-box .cr-line.total{color:#1e6f5c; font-weight:700;}
-  #cardReceipt .cr-desc{font-size:11.5px; margin-top:10px;}
-  #cardReceipt .cr-sign{margin-top:16px; float:right; text-align:center; border:1px solid #e4ddcf; border-radius:10px; padding:8px 16px 6px;}
-  #cardReceipt .cr-sign .cr-scribble{display:block; margin:0 auto 2px;}
-  #cardReceipt .cr-sign .cr-shopname{font-size:10px; opacity:.6; border-top:1px solid #cbbfa0; padding-top:4px; margin-top:2px;}
-  #cardReceipt .cr-clear{clear:both;}
+  #cardReceipt, #invoiceReceipt{display:none; width:380px; background:#fff; color:#26332c; font-family:'Inter',sans-serif; padding:20px;}
+  #cardReceipt .cr-head, #invoiceReceipt .cr-head{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  #cardReceipt .cr-head img, #invoiceReceipt .cr-head img{width:40px; height:40px; border-radius:8px; object-fit:cover;}
+  #cardReceipt .cr-shop, #invoiceReceipt .cr-shop{font-weight:700; font-size:14px; color:#26332c;}
+  #cardReceipt .cr-sub, #invoiceReceipt .cr-sub{font-size:11px; opacity:.6;}
+  #cardReceipt .cr-title, #invoiceReceipt .cr-title{text-align:center; font-family:'Fraunces',serif; font-weight:700; font-size:19px; margin:10px 0 16px;}
+  #cardReceipt .cr-row, #invoiceReceipt .cr-row{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;}
+  #cardReceipt .cr-row .lbl, #invoiceReceipt .cr-row .lbl{opacity:.55;}
+  #cardReceipt .cr-box, #invoiceReceipt .cr-box{border:1px solid #e4ddcf; border-radius:12px; padding:14px; margin:14px 0;}
+  #cardReceipt .cr-box .cr-line, #invoiceReceipt .cr-box .cr-line{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0;}
+  #cardReceipt .cr-box .cr-line.total, #invoiceReceipt .cr-box .cr-line.total{color:#1e6f5c; font-weight:700;}
+  #invoiceReceipt .cr-box .cr-line.sub{border-top:1px dashed #e4ddcf; margin-top:4px; padding-top:8px;}
+  #cardReceipt .cr-desc, #invoiceReceipt .cr-desc{font-size:11.5px; margin-top:10px;}
+  #cardReceipt .cr-sign, #invoiceReceipt .cr-sign{margin-top:16px; float:right; text-align:center; border:1px solid #e4ddcf; border-radius:10px; padding:8px 16px 6px;}
+  #cardReceipt .cr-sign .cr-scribble, #invoiceReceipt .cr-sign .cr-scribble{display:block; margin:0 auto 2px;}
+  #cardReceipt .cr-sign .cr-shopname, #invoiceReceipt .cr-sign .cr-shopname{font-size:10px; opacity:.6; border-top:1px solid #cbbfa0; padding-top:4px; margin-top:2px;}
+  #cardReceipt .cr-clear, #invoiceReceipt .cr-clear{clear:both;}
+  #invoiceReceipt .cr-inv-table{width:100%; border-collapse:collapse; font-size:12px; margin-top:4px;}
+  #invoiceReceipt .cr-inv-table td{padding:5px 0;}
+  #invoiceReceipt .cr-inv-table td:last-child{text-align:right; font-family:monospace;}
   @media print{
     body *{ visibility:hidden; }
     #thermalReceipt, #thermalReceipt *{ visibility:visible; }
@@ -309,6 +313,7 @@
       <div class="card">
         <div style="font-weight:600; font-size:13px; margin-bottom:10px;">Manual Backup</div>
         <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="exportJSON()">⬇ JSON Backup Download Karein</button>
+        <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" onclick="emailBackupJSON()">✉️ Email Se Backup Bhejein</button>
         <button class="btn btn-outline btn-block" onclick="document.getElementById('importFile').click()">⬆ Backup Se Restore Karein</button>
         <input type="file" id="importFile" accept="application/json" style="display:none;" onchange="importJSON(this.files[0])">
       </div>
@@ -368,36 +373,14 @@
     <!-- CALCULATOR -->
     <div class="view" id="view-calculator">
       <div class="card">
-        <div class="row-between" style="margin-bottom:10px;">
-          <span style="font-weight:600; font-size:14px;">🧮 Calculator</span>
-          <button class="btn-outline btn btn-sm" onclick="calcClear()">Clear</button>
+        <div style="font-weight:600; font-size:14px; margin-bottom:10px;">🧮 Qist Calculator</div>
+        <div style="font-size:11px; opacity:.6; margin-bottom:10px;">Price aur Markup % daal kar Payment + Markup, Total Payment aur har Qist ka amount khud nikal aayega.</div>
+        <div class="field" style="margin-bottom:8px;"><label>Price (Payment)</label><input type="number" id="qcTotal" oninput="qistCalc()"></div>
+        <div class="field" style="margin-bottom:8px;"><label>Markup %</label><input type="number" id="qcMarkup" value="0" oninput="qistCalc()"></div>
+        <div class="method-row" style="margin:0 0 8px;">
+          <button type="button" class="method-btn" onclick="setQcMarkup(30)">30%</button>
+          <button type="button" class="method-btn" onclick="setQcMarkup(35)">35%</button>
         </div>
-        <div id="calcDisplay" style="background:var(--paper-dark); border-radius:12px; padding:16px; text-align:right; font-size:28px; font-weight:700; font-family:monospace; margin-bottom:10px; overflow-x:auto; white-space:nowrap;">0</div>
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
-          <button class="btn btn-outline" onclick="calcInput('7')">7</button>
-          <button class="btn btn-outline" onclick="calcInput('8')">8</button>
-          <button class="btn btn-outline" onclick="calcInput('9')">9</button>
-          <button class="btn btn-outline-teal" onclick="calcInput('/')">÷</button>
-          <button class="btn btn-outline" onclick="calcInput('4')">4</button>
-          <button class="btn btn-outline" onclick="calcInput('5')">5</button>
-          <button class="btn btn-outline" onclick="calcInput('6')">6</button>
-          <button class="btn btn-outline-teal" onclick="calcInput('*')">×</button>
-          <button class="btn btn-outline" onclick="calcInput('1')">1</button>
-          <button class="btn btn-outline" onclick="calcInput('2')">2</button>
-          <button class="btn btn-outline" onclick="calcInput('3')">3</button>
-          <button class="btn btn-outline-teal" onclick="calcInput('-')">−</button>
-          <button class="btn btn-outline" onclick="calcInput('0')">0</button>
-          <button class="btn btn-outline" onclick="calcInput('.')">.</button>
-          <button class="btn btn-outline" onclick="calcBackspace()">⌫</button>
-          <button class="btn btn-outline-teal" onclick="calcInput('+')">+</button>
-          <button class="btn btn-gold" style="grid-column:span 4;" onclick="calcEquals()">=</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-weight:600; font-size:14px; margin-bottom:10px;">📋 Qist Calculator</div>
-        <div style="font-size:11px; opacity:.6; margin-bottom:10px;">Price, advance aur qiston ki tadaad daal kar har qist ka amount nikalein.</div>
-        <div class="field" style="margin-bottom:8px;"><label>Total Price</label><input type="number" id="qcTotal" oninput="qistCalc()"></div>
         <div class="field" style="margin-bottom:8px;"><label>Advance</label><input type="number" id="qcAdvance" value="0" oninput="qistCalc()"></div>
         <div class="field" style="margin-bottom:8px;"><label>Kitni Qistein</label><input type="number" id="qcCount" value="1" oninput="qistCalc()"></div>
         <div id="qcResult" style="background:var(--paper-dark); border-radius:12px; padding:12px; margin-top:6px; font-size:13px; line-height:1.8;"></div>
@@ -453,15 +436,21 @@
       <option value="Motorola">
     </datalist>
     <div class="grid2">
-      <div class="field"><label>Total Amount *</label><input type="number" id="npTotal"></div>
-      <div class="field"><label>Advance Paid</label><input type="number" id="npAdvance" value="0"></div>
+      <div class="field"><label>Price *</label><input type="number" id="npPrice" oninput="npCalc()"></div>
+      <div class="field"><label>Markup %</label><input type="number" id="npMarkup" value="0" oninput="npCalc()"></div>
+    </div>
+    <div class="method-row" style="margin:0 0 10px;">
+      <button type="button" class="method-btn" onclick="setNpMarkup(30)">30%</button>
+      <button type="button" class="method-btn" onclick="setNpMarkup(35)">35%</button>
     </div>
     <div class="grid2">
-      <div class="field"><label>Qist Amount</label><input type="number" id="npInstallment"></div>
-      <div class="field"><label>Frequency</label>
-        <select id="npFrequency"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
-      </div>
+      <div class="field"><label>Advance Paid</label><input type="number" id="npAdvance" value="0" oninput="npCalc()"></div>
+      <div class="field"><label>Kitni Qistein</label><input type="number" id="npCount" value="1" oninput="npCalc()"></div>
     </div>
+    <div class="field"><label>Frequency</label>
+      <select id="npFrequency"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
+    </div>
+    <div id="npCalcResult" style="background:var(--paper-dark); border-radius:12px; padding:12px; margin-bottom:10px; font-size:12.5px; line-height:1.8;"></div>
     <div class="field"><label>Start Date</label><input type="date" id="npStart"></div>
     <button class="btn btn-teal btn-block" id="npSubmitBtn" onclick="submitAddParty()">Party Save Karein</button>
   </div>
@@ -503,6 +492,8 @@
 <div id="thermalReceipt"></div>
 <!-- Hidden card-style bill receipt template (used for the "Bill Receipt" image share) -->
 <div id="cardReceipt"></div>
+<!-- Hidden invoice template — Price + Markup + Total + Installment plan, shared as JPG when a new party is added -->
+<div id="invoiceReceipt"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1129,6 +1120,81 @@ function shareViaCardImage(){
   closeShareModal();
 }
 
+/* Invoice — Payment (Price) + Markup breakdown, Total Payment and the
+   monthly installment plan, styled like a proper bill. Generated the moment
+   a party is added (or on demand from Party Detail) and shared as a JPG. */
+function buildInvoiceHTML(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return null;
+  const headerImg = document.querySelector('header .inner img');
+  const logoSrc = headerImg ? headerImg.src : '';
+  const price = party.price != null ? party.price : party.totalAmount;
+  const markupPct = party.markupPercent || 0;
+  const markupAmount = price * markupPct / 100;
+  const totalAmount = party.totalAmount;
+  const count = party.installmentCount || 1;
+  const div = document.getElementById('invoiceReceipt');
+  div.innerHTML = `
+    <div class="cr-head">
+      ${logoSrc ? `<img src="${logoSrc}" alt="Guli Shop">` : ''}
+      <div>
+        <div class="cr-shop">Guli Shop and Installment</div>
+        <div class="cr-sub">${SHOP_PHONE2}</div>
+        <div class="cr-sub">${SHOP_ADDRESS}</div>
+      </div>
+    </div>
+    <div class="cr-title">Invoice / Bill</div>
+    <div class="cr-row"><span class="lbl">Customer:</span><span></span></div>
+    <div class="cr-row"><span>${party.name}</span><span>Date: ${fmtDate(party.startDate||todayStr())}</span></div>
+    <div class="cr-row"><span>${party.phone||''}</span><span>${party.item?('Item: '+party.item):''}</span></div>
+    <div class="cr-box">
+      <table class="cr-inv-table">
+        <tr><td>Payment (Price)</td><td>${fmtMoney(price)}</td></tr>
+        <tr><td>+ Markup (${markupPct}%)</td><td>${fmtMoney(markupAmount)}</td></tr>
+      </table>
+      <div class="cr-line total"><span>Total Payment</span><span>${fmtMoney(totalAmount)}</span></div>
+      <div class="cr-line sub"><span>Advance Paid</span><span>${fmtMoney(party.advancePaid||0)}</span></div>
+      <div class="cr-line"><span>Baqaya</span><span>${fmtMoney(Math.max(totalAmount-(party.advancePaid||0),0))}</span></div>
+    </div>
+    <div class="cr-desc"><b>Installment Plan:</b> ${count} × ${party.frequency||'Monthly'} qist — ${fmtMoney(party.installmentAmount||0)} har qist</div>
+    <div class="cr-sign">
+      ${SIGNATURE_SVG}
+      <div class="cr-shopname">Guli Shop and Installment</div>
+    </div>
+    <div class="cr-clear"></div>
+  `;
+  return div;
+}
+function shareInvoiceImage(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return;
+  const div = buildInvoiceHTML(partyId);
+  if(!div) return;
+  const prevDisplay = div.style.display;
+  div.style.display = 'block';
+  if(typeof html2canvas === 'undefined'){
+    showToast('Image library load nahi hui — internet check karein', 'error');
+    div.style.display = prevDisplay;
+    return;
+  }
+  html2canvas(div, {backgroundColor:'#ffffff', scale:3}).then(canvas => {
+    div.style.display = prevDisplay;
+    canvas.toBlob(blob => {
+      const file = new File([blob], 'invoice-'+party.name.replace(/\s+/g,'_')+'-'+todayStr()+'.jpg', {type:'image/jpeg'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'Guli Shop Invoice', text:'Invoice — '+party.name}).catch(()=>{});
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Invoice JPG download ho gayi');
+      }
+    }, 'image/jpeg', 0.95);
+  }).catch(()=>{ div.style.display = prevDisplay; showToast('Image banane mein masla hua', 'error'); });
+}
+
 /* ===================== CRUD ===================== */
 function addPartyRecord(party){
   parties.push(party);
@@ -1197,6 +1263,29 @@ function exportJSON(){
   a.click();
   URL.revokeObjectURL(url);
   showToast('Backup download ho gaya');
+}
+function emailBackupJSON(){
+  const filename = 'guli-shop-backup-' + todayStr() + '.json';
+  const jsonText = JSON.stringify({parties,payments}, null, 2);
+  const blob = new Blob([jsonText], {type:'application/json'});
+  const file = new File([blob], filename, {type:'application/json'});
+  const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments (' + todayStr() + ')';
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file], title:'Guli Shop Backup', text:shareText}).catch(()=>{});
+    return;
+  }
+  // Fallback: browsers can't attach a file to a mailto: link, so download
+  // the backup file first, then open the phone's email app with the
+  // subject/body ready — user just attaches the downloaded file.
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
+  const body = encodeURIComponent(shareText + '\n\nBackup file "' + filename + '" download ho chuki hai — is email mein attach kar dein.');
+  window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+  showToast('Backup download ho gayi — email mein attach kar dein');
 }
 function importJSON(file){
   if(!file) return;
@@ -1275,11 +1364,17 @@ function downloadPartyPDF(partyId){
   doc.text('Naam: ' + party.name, 14, 50);
   if(party.phone) doc.text('Phone: ' + party.phone, 14, 56);
   doc.text('Item: ' + (party.item||'-'), 14, party.phone?62:56);
-  const y0 = party.phone?70:64;
+  let y0 = party.phone?70:64;
+  if(party.price != null){
+    const markupAmount = party.price * (party.markupPercent||0) / 100;
+    doc.text('Payment (Price): ' + fmtMoney(party.price) + '   +Markup(' + (party.markupPercent||0) + '%): ' + fmtMoney(markupAmount), 14, y0);
+    y0 += 6;
+  }
   doc.text('Total Amount: ' + fmtMoney(party.totalAmount), 14, y0);
   doc.text('Wasool Shuda: ' + fmtMoney(bal.totalPaid), 14, y0+6);
   doc.text('Baqaya: ' + fmtMoney(bal.balance), 14, y0+12);
   doc.text('Report Date: ' + fmtDate(todayStr()), 14, y0+18);
+  y0 += 18;
 
   let y = y0 + 30;
   doc.setFont('helvetica','bold'); doc.setFontSize(11);
@@ -1315,56 +1410,29 @@ function showView(name){
   if(name==='calculator'){ qistCalc(); }
 }
 
-/* ===================== CALCULATOR ===================== */
-let calcExpr = '';
-function calcRender(){
-  document.getElementById('calcDisplay').textContent = calcExpr === '' ? '0' : calcExpr;
+/* ===================== QIST CALCULATOR (Markup-based) ===================== */
+function setQcMarkup(pct){
+  document.getElementById('qcMarkup').value = pct;
+  qistCalc();
 }
-function calcInput(v){
-  const ops = ['+','-','*','/'];
-  if(ops.includes(v) && (calcExpr === '' || ops.includes(calcExpr.slice(-1)))){
-    if(calcExpr === '') return; // don't start with an operator
-    calcExpr = calcExpr.slice(0,-1) + v; // replace trailing operator
-  } else {
-    calcExpr += v;
-  }
-  calcRender();
-}
-function calcBackspace(){
-  calcExpr = calcExpr.slice(0,-1);
-  calcRender();
-}
-function calcClear(){
-  calcExpr = '';
-  calcRender();
-}
-function calcEquals(){
-  if(!calcExpr) return;
-  try{
-    // Only digits, dot and + - * / allowed — safe to evaluate.
-    if(!/^[0-9+\-*/.]+$/.test(calcExpr)) throw new Error('bad');
-    const result = Function('"use strict"; return (' + calcExpr + ')')();
-    if(!isFinite(result)) throw new Error('bad');
-    calcExpr = String(Math.round(result*100000)/100000);
-  } catch(e){
-    calcExpr = 'Error';
-  }
-  calcRender();
-}
-
 function qistCalc(){
-  const total = Number(document.getElementById('qcTotal').value)||0;
+  const price = Number(document.getElementById('qcTotal').value)||0;
+  const markupPct = Number(document.getElementById('qcMarkup').value)||0;
   const advance = Number(document.getElementById('qcAdvance').value)||0;
   const count = Number(document.getElementById('qcCount').value)||0;
   const box = document.getElementById('qcResult');
-  if(total<=0 || count<=0){ box.innerHTML = '<span style="opacity:.5;">Total price aur qiston ki tadaad daalein</span>'; return; }
-  const remaining = Math.max(total - advance, 0);
+  if(price<=0 || count<=0){ box.innerHTML = '<span style="opacity:.5;">Price aur qiston ki tadaad daalein</span>'; return; }
+  const markupAmount = price * markupPct / 100;
+  const totalPayment = price + markupAmount;
+  const remaining = Math.max(totalPayment - advance, 0);
   const perInstallment = remaining / count;
   box.innerHTML = `
-    <div class="row-between"><span>Total Price</span><span class="mono">${fmtMoney(total)}</span></div>
+    <div class="row-between"><span>Payment (Price)</span><span class="mono">${fmtMoney(price)}</span></div>
+    <div class="row-between"><span>+ Markup (${markupPct}%)</span><span class="mono">${fmtMoney(markupAmount)}</span></div>
+    <div class="row-between" style="font-weight:700; border-top:1px solid var(--line); padding-top:6px; margin-top:2px;"><span>Total Payment</span><span class="mono">${fmtMoney(totalPayment)}</span></div>
     <div class="row-between"><span>Advance</span><span class="mono">${fmtMoney(advance)}</span></div>
     <div class="row-between"><span>Baqaya (Remaining)</span><span class="mono">${fmtMoney(remaining)}</span></div>
-    <div class="row-between" style="font-weight:700; color:var(--teal);"><span>Har Qist</span><span class="mono">${fmtMoney(perInstallment)}</span></div>
+    <div class="row-between" style="font-weight:700; color:var(--teal);"><span>Monthly Qist (${count})</span><span class="mono">${fmtMoney(perInstallment)}</span></div>
   `;
 }
 
@@ -1374,15 +1442,43 @@ function selectPartyType(btn){
   btn.classList.add('active');
 }
 let editingPartyId = null;
+function setNpMarkup(pct){
+  document.getElementById('npMarkup').value = pct;
+  npCalc();
+}
+// Reads Price + Markup% + Advance + Kitni Qistein and computes Total Payment
+// and the per-installment amount — customer/staff only ever type the Price.
+function npCalc(){
+  const price = Number(document.getElementById('npPrice').value)||0;
+  const markupPct = Number(document.getElementById('npMarkup').value)||0;
+  const advance = Number(document.getElementById('npAdvance').value)||0;
+  const count = Math.max(Number(document.getElementById('npCount').value)||0, 0);
+  const box = document.getElementById('npCalcResult');
+  if(price<=0){ box.innerHTML = '<span style="opacity:.5;">Price daalein — Total aur Qist khud ban jayega</span>'; return {totalAmount:0, installmentAmount:0, markupAmount:0}; }
+  const markupAmount = price * markupPct / 100;
+  const totalAmount = price + markupAmount;
+  const remaining = Math.max(totalAmount - advance, 0);
+  const installmentAmount = count>0 ? remaining/count : 0;
+  box.innerHTML = `
+    <div class="row-between"><span>Payment (Price)</span><span class="mono">${fmtMoney(price)}</span></div>
+    <div class="row-between"><span>+ Markup (${markupPct}%)</span><span class="mono">${fmtMoney(markupAmount)}</span></div>
+    <div class="row-between" style="font-weight:700; border-top:1px solid var(--line); padding-top:6px; margin-top:2px;"><span>Total Payment</span><span class="mono">${fmtMoney(totalAmount)}</span></div>
+    ${count>0 ? `<div class="row-between" style="font-weight:700; color:var(--teal);"><span>Monthly Qist (${count})</span><span class="mono">${fmtMoney(installmentAmount)}</span></div>` : ''}
+  `;
+  return {totalAmount, installmentAmount, markupAmount};
+}
 function openAddPartyModal(){
   editingPartyId = null;
   document.getElementById('npModalTitle').textContent = 'Nayi Party';
   document.getElementById('npSubmitBtn').textContent = 'Party Save Karein';
-  ['npName','npPhone','npItem','npTotal','npInstallment'].forEach(id=>document.getElementById(id).value='');
+  ['npName','npPhone','npItem','npPrice'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('npMarkup').value = '0';
   document.getElementById('npAdvance').value = '0';
+  document.getElementById('npCount').value = '1';
   document.getElementById('npFrequency').value = 'Monthly';
   document.getElementById('npStart').value = todayStr();
   document.querySelectorAll('#npTypeRow .method-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
+  npCalc();
   document.getElementById('addPartyModal').style.display = 'flex';
 }
 function openEditPartyModal(id){
@@ -1394,20 +1490,28 @@ function openEditPartyModal(id){
   document.getElementById('npName').value = party.name || '';
   document.getElementById('npPhone').value = party.phone || '';
   document.getElementById('npItem').value = party.item || '';
-  document.getElementById('npTotal').value = party.totalAmount || '';
+  // Older parties saved before Price/Markup existed only have totalAmount —
+  // fall back to treating that as the Price with 0% markup.
+  document.getElementById('npPrice').value = party.price != null ? party.price : (party.totalAmount || '');
+  document.getElementById('npMarkup').value = party.markupPercent || 0;
   document.getElementById('npAdvance').value = party.advancePaid || 0;
-  document.getElementById('npInstallment').value = party.installmentAmount || '';
+  const fallbackCount = (party.installmentAmount>0) ? Math.max(Math.round((party.totalAmount - (party.advancePaid||0)) / party.installmentAmount), 1) : 1;
+  document.getElementById('npCount').value = party.installmentCount || fallbackCount;
   document.getElementById('npFrequency').value = party.frequency || 'Monthly';
   document.getElementById('npStart').value = party.startDate || todayStr();
   document.querySelectorAll('#npTypeRow .method-btn').forEach(b=>b.classList.toggle('active', b.dataset.t === (party.partyType||'receivable')));
+  npCalc();
   document.getElementById('addPartyModal').style.display = 'flex';
 }
 function closeAddPartyModal(){ document.getElementById('addPartyModal').style.display = 'none'; editingPartyId = null; }
 function submitAddParty(){
   const name = document.getElementById('npName').value.trim();
-  const totalAmount = document.getElementById('npTotal').value;
-  if(!name || !totalAmount){ showToast('Naam aur Total Amount zaroori hai', 'error'); return; }
+  const price = document.getElementById('npPrice').value;
+  if(!name || !price){ showToast('Naam aur Price zaroori hai', 'error'); return; }
   const partyType = document.querySelector('#npTypeRow .method-btn.active')?.dataset.t || 'receivable';
+  const calc = npCalc();
+  const markupPercent = Number(document.getElementById('npMarkup').value||0);
+  const installmentCount = Math.max(Number(document.getElementById('npCount').value)||1, 1);
   if(editingPartyId){
     const oldParty = parties.find(p=>p.id===editingPartyId);
     if(!oldParty){ closeAddPartyModal(); return; }
@@ -1416,9 +1520,12 @@ function submitAddParty(){
       partyType,
       phone: document.getElementById('npPhone').value.trim(),
       item: document.getElementById('npItem').value.trim(),
-      totalAmount: Number(totalAmount),
+      price: Number(price),
+      markupPercent,
+      installmentCount,
+      totalAmount: calc.totalAmount,
       advancePaid: Number(document.getElementById('npAdvance').value||0),
-      installmentAmount: Number(document.getElementById('npInstallment').value||0),
+      installmentAmount: calc.installmentAmount,
       frequency: document.getElementById('npFrequency').value,
       startDate: document.getElementById('npStart').value || todayStr()
     });
@@ -1434,17 +1541,21 @@ function submitAddParty(){
     partyType,
     phone: document.getElementById('npPhone').value.trim(),
     item: document.getElementById('npItem').value.trim(),
-    totalAmount: Number(totalAmount),
+    price: Number(price),
+    markupPercent,
+    installmentCount,
+    totalAmount: calc.totalAmount,
     advancePaid: Number(document.getElementById('npAdvance').value||0),
-    installmentAmount: Number(document.getElementById('npInstallment').value||0),
+    installmentAmount: calc.installmentAmount,
     frequency: document.getElementById('npFrequency').value,
     startDate: document.getElementById('npStart').value || todayStr()
   };
   addPartyRecord(party);
   closeAddPartyModal();
-  showToast('Party judd di gayi — PDF bill taiyar ho raha hai');
-  // Party add hote hi uska PDF bill turant download ho jata hai.
-  setTimeout(()=>downloadPartyPDF(party.id), 300);
+  showToast('Party judd di gayi — invoice JPG taiyar ho rahi hai');
+  // Party add hote hi uska invoice bill turant JPG ki soorat mein
+  // save/share ho jata hai — customer ko bhejne ke liye taiyar.
+  setTimeout(()=>shareInvoiceImage(party.id), 300);
 }
 
 /* ===================== DASHBOARD BALANCE SHOW/HIDE ===================== */
@@ -1582,7 +1693,8 @@ function renderPartyDetail(id){
         <div><div class="stat-label">Wasool</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--teal);">${fmtMoney(bal.totalPaid)}</div></div>
         <div><div class="stat-label">${payable?'Dena Hai':'Baqi'}</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--brick);">${fmtMoney(bal.balance)}</div></div>
       </div>
-      ${party.installmentAmount ? `<div style="font-size:12px; opacity:.6; margin-top:8px;">Qist: ${fmtMoney(party.installmentAmount)} / ${party.frequency}</div>` : ''}
+      ${party.price != null ? `<div style="font-size:12px; opacity:.6; margin-top:8px;">Payment: ${fmtMoney(party.price)} + Markup (${party.markupPercent||0}%): ${fmtMoney(party.price*(party.markupPercent||0)/100)} = Total ${fmtMoney(party.totalAmount)}</div>` : ''}
+      ${party.installmentAmount ? `<div style="font-size:12px; opacity:.6; margin-top:4px;">Qist: ${fmtMoney(party.installmentAmount)} / ${party.frequency}${party.installmentCount?(' × '+party.installmentCount):''}</div>` : ''}
     </div>
 
     ${bal.balance>0 && party.installmentAmount ? `
@@ -1628,6 +1740,7 @@ function renderPartyDetail(id){
 
     <div class="card">
       <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📑 Party Report</div>
+      <button class="btn btn-gold btn-block" style="margin-bottom:8px;" onclick="shareInvoiceImage(${party.id})">🧾 Invoice (JPG) Save/Share Karein</button>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="downloadPartyPDF(${party.id})">📄 PDF Download</button>
         <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="downloadPartyCSV(${party.id})">📊 Google Sheet (CSV)</button>
