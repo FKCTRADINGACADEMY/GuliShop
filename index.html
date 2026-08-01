@@ -1347,24 +1347,43 @@ function emailBackupJSON(){
   const filename = 'guli-shop-backup-' + todayStr() + '.json';
   const jsonText = JSON.stringify({parties,payments}, null, 2);
   const blob = new Blob([jsonText], {type:'application/json'});
-  const file = new File([blob], filename, {type:'application/json'});
   const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments (' + todayStr() + ')';
-  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-    navigator.share({files:[file], title:'Guli Shop Backup', text:shareText}).catch(()=>{});
-    return;
+
+  // Reliable fallback: browsers can't attach a file to a mailto: link, so
+  // download the backup file first, then open the phone's email app with
+  // the subject/body ready — user just attaches the downloaded file.
+  function fallbackDownloadAndMail(){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
+    const body = encodeURIComponent(shareText + '\n\nBackup file "' + filename + '" download ho chuki hai — is email mein attach kar dein.');
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    showToast('Backup download ho gayi — email mein attach kar dein');
   }
-  // Fallback: browsers can't attach a file to a mailto: link, so download
-  // the backup file first, then open the phone's email app with the
-  // subject/body ready — user just attaches the downloaded file.
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-  const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
-  const body = encodeURIComponent(shareText + '\n\nBackup file "' + filename + '" download ho chuki hai — is email mein attach kar dein.');
-  window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
-  showToast('Backup download ho gayi — email mein attach kar dein');
+
+  // Pehle system share sheet try karte hain (agar available ho). Pehle
+  // isi jagah ".catch(()=>{})" tha jo har tarah ki nakami ko chup-chap
+  // nigal jata tha — is se tap karne par kabhi kabhi bilkul koi response
+  // nahi milta tha. Ab agar share fail/unsupported ho to hamesha
+  // reliable download+mailto fallback chalega, taake tap par kuch-na-kuch
+  // zaroor ho.
+  try{
+    const file = new File([blob], filename, {type:'application/json'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:'Guli Shop Backup', text:shareText})
+        .then(()=>showToast('Backup share ho gayi'))
+        .catch(err=>{
+          if(err && err.name === 'AbortError') return; // user ne khud cancel kiya
+          fallbackDownloadAndMail();
+        });
+      return;
+    }
+  }catch(e){ /* share API available nahi ya error — neeche fallback chalega */ }
+
+  fallbackDownloadAndMail();
 }
 function importJSON(file){
   if(!file) return;
