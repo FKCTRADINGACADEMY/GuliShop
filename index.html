@@ -876,6 +876,16 @@ function sendReminderWhatsApp(partyId){
   const bal = partyBalance(party.id).balance;
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(reminderMessage(party,due,bal)), '_blank');
 }
+function sendReminderSMS(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return;
+  if(!party.phone){ showToast('Is party ka phone number nahi hai', 'error'); return; }
+  const due = computeNextDue(party);
+  const bal = partyBalance(party.id).balance;
+  const num = waNumberFor(party.phone);
+  // sms: link phone ki apni Messages app khol deta hai, text pehle se likha hota hai — sirf Send dabana hota hai.
+  window.open('sms:'+num+'?body='+encodeURIComponent(reminderMessage(party,due,bal)));
+}
 
 /* ===================== AUTO SMS REMINDER (SCHEDULED) =====================
    NOTE (limitation): koi bhi browser/PWA phone ki security ki wajah se
@@ -1882,10 +1892,12 @@ function renderPartyDetail(id){
     <div class="card dashed">
       <div style="font-size:12px; font-weight:700; color:var(--gold); margin-bottom:2px;">📅 Agli Qist Ka Reminder</div>
       <div style="font-size:12px; opacity:.6; margin-bottom:10px;">${fmtDate(nextDue)} ko due hai</div>
-      <div style="display:flex; gap:8px;">
-        <a class="btn btn-gold btn-sm" style="flex:1; text-align:center;" href="${googleCalendarLink(party, nextDue)}" target="_blank" rel="noreferrer">Calendar Mein Add Karein</a>
-        ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="sendReminderWhatsApp(${party.id})">💬 WhatsApp Reminder</button>` : ''}
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a class="btn btn-gold btn-sm" style="flex:1; min-width:120px; text-align:center;" href="${googleCalendarLink(party, nextDue)}" target="_blank" rel="noreferrer">Calendar Mein Add Karein</a>
+        ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1; min-width:120px;" onclick="sendReminderWhatsApp(${party.id})">💬 WhatsApp Reminder</button>` : ''}
+        ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1; min-width:120px;" onclick="sendReminderSMS(${party.id})">✉️ SMS Reminder</button>` : ''}
       </div>
+      ${!party.phone ? `<div style="font-size:11px; opacity:.6; margin-top:8px;">SMS/WhatsApp reminder bhejne ke liye is party ka phone number darj karein.</div>` : ''}
       ${party.phone ? `
       <button class="btn ${party.autoReminder?'btn-gold':'btn-outline-teal'} btn-sm btn-block" style="margin-top:8px;" onclick="toggleAutoReminder(${party.id})">
         ${party.autoReminder ? '🔔 Auto-Reminder: ON (baqaya clear hone tak har qist par yaad dilayega)' : '🔕 Auto-Reminder Schedule Karein'}
