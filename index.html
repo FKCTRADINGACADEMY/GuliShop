@@ -380,14 +380,14 @@
         <div style="font-weight:600; font-size:14px; margin-bottom:10px;">🧮 Qist Calculator</div>
         <div style="font-size:11px; opacity:.6; margin-bottom:10px;">Price aur Markup % daal kar Payment + Markup, Total Payment aur har Qist ka amount khud nikal aayega.</div>
         <div class="field" style="margin-bottom:8px;"><label>Price (Payment)</label><input type="number" id="qcTotal" oninput="qistCalc()"></div>
-        <div class="field" style="margin-bottom:8px;"><label>Markup %</label><input type="number" id="qcMarkup" value="0" oninput="qistCalc()"></div>
+        <div class="field" style="margin-bottom:8px;"><label>Markup %</label><input type="number" id="qcMarkup" value="0" oninput="qcMarkupChanged()"></div>
         <div class="method-row" style="margin:0 0 8px;">
           <button type="button" class="method-btn" onclick="setQcMarkup(30)">30%</button>
           <button type="button" class="method-btn" onclick="setQcMarkup(35)">35%</button>
         </div>
         <div class="grid2" style="margin-bottom:8px;">
           <div class="field" style="margin-bottom:0;"><label>Advance</label><input type="number" id="qcAdvance" value="0" oninput="qcAdvanceChanged()"></div>
-          <div class="field" style="margin-bottom:0;"><label>Advance %</label><input type="number" id="qcAdvancePct" placeholder="e.g. 20" oninput="qistCalc()"></div>
+          <div class="field" style="margin-bottom:0;"><label>Advance %</label><input type="number" id="qcAdvancePct" placeholder="e.g. 20" oninput="qcAdvancePctChanged()"></div>
         </div>
         <div class="field" style="margin-bottom:8px;"><label>Kitni Qistein</label><input type="number" id="qcCount" value="6" oninput="qistCalc()"></div>
         <div id="qcResult" style="background:var(--paper-dark); border-radius:12px; padding:12px; margin-top:6px; font-size:13px; line-height:1.8;"></div>
@@ -1512,8 +1512,25 @@ function showView(name){
 }
 
 /* ===================== QIST CALCULATOR (Markup-based) ===================== */
+// Jab tak user khud Advance % mein kuch type na kare, Advance % apne aap
+// Markup % ke barabar rehta hai (jaise 30% markup ho to Advance % bhi
+// khud-ba-khud 30% ho jata hai — jo phir Advance amount nikal deta hai).
+let qcAdvancePctManual = false;
+function syncAdvancePctFromMarkup(){
+  if(qcAdvancePctManual) return;
+  document.getElementById('qcAdvancePct').value = document.getElementById('qcMarkup').value;
+}
 function setQcMarkup(pct){
   document.getElementById('qcMarkup').value = pct;
+  syncAdvancePctFromMarkup();
+  qistCalc();
+}
+function qcMarkupChanged(){
+  syncAdvancePctFromMarkup();
+  qistCalc();
+}
+function qcAdvancePctChanged(){
+  qcAdvancePctManual = true;
   qistCalc();
 }
 /* User ne Advance ka amount seedha (haath se) type kiya — is soorat mein
@@ -1521,6 +1538,7 @@ function setQcMarkup(pct){
    overwrite na kare (jo neeche qistCalc() mein hota hai). */
 function qcAdvanceChanged(){
   document.getElementById('qcAdvancePct').value = '';
+  qcAdvancePctManual = true;
   qistCalc();
 }
 function qistCalc(){
