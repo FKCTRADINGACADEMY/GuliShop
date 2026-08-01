@@ -130,6 +130,10 @@
   #cardReceipt .cr-sign .cr-scribble, #invoiceReceipt .cr-sign .cr-scribble{display:block; margin:0 auto 2px;}
   #cardReceipt .cr-sign .cr-shopname, #invoiceReceipt .cr-sign .cr-shopname{font-size:10px; opacity:.6; border-top:1px solid #cbbfa0; padding-top:4px; margin-top:2px;}
   #cardReceipt .cr-clear, #invoiceReceipt .cr-clear{clear:both;}
+  #cardReceipt .cr-note, #invoiceReceipt .cr-note{font-size:10.5px; color:#8a4a1f; background:#fbeee0; border:1px dashed #d9a66c; border-radius:8px; padding:6px 8px; margin-top:10px;}
+  #cardReceipt .cr-footer, #invoiceReceipt .cr-footer{margin-top:16px; padding-top:10px; border-top:1px dashed #e4ddcf; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  #cardReceipt .cr-stamp, #invoiceReceipt .cr-stamp{width:56px; height:56px; object-fit:cover; border-radius:50%; opacity:.82; transform:rotate(-8deg); box-shadow:0 0 0 2px rgba(30,111,92,.35);}
+  #cardReceipt .cr-credit, #invoiceReceipt .cr-credit{font-size:9.5px; opacity:.45; text-align:center;}
   #invoiceReceipt .cr-inv-table{width:100%; border-collapse:collapse; font-size:12px; margin-top:4px;}
   #invoiceReceipt .cr-inv-table td{padding:5px 0;}
   #invoiceReceipt .cr-inv-table td:last-child{text-align:right; font-family:monospace;}
@@ -176,29 +180,6 @@
     10%,90%{ transform:translateX(-1px); } 20%,80%{ transform:translateX(2px); }
     30%,50%,70%{ transform:translateX(-5px); } 40%,60%{ transform:translateX(5px); }
   }
-
-  /* ===================== DARK MODE ===================== */
-  body.dark{
-    --paper:#141d19; --paper-dark:#0c1512; --ink:#EAE4D4; --line:#33433a;
-  }
-  body.dark .card, body.dark .party-item, body.dark input, body.dark select,
-  body.dark .modal, body.dark #cpKeypad button, body.dark .empty{
-    background:#1a2620; color:var(--ink); border-color:var(--line);
-  }
-  body.dark ::placeholder{ color:#9aa39a; opacity:.7; }
-  body.dark th, body.dark td{ border-color:var(--line); }
-  body.dark .method-btn{ border-color:var(--line); color:var(--ink); background:transparent; }
-  body.dark .method-btn.active{ background:var(--teal); color:#fff; }
-  body.dark .icon-btn{ filter:brightness(1.4); }
-  body.dark .btn-outline{ border-color:var(--line); color:var(--ink); }
-  body.dark .ledger-row{ border-color:var(--line); }
-  /* Login/lock screen keeps its own fixed light palette regardless of dark mode */
-  #loginScreen{ --paper:#F7F2E7; --paper-dark:#EFE7D4; --ink:#1C2B24; --line:#DDD3B8; }
-  .dm-toggle{ display:flex; align-items:center; justify-content:space-between; }
-  .dm-switch{ width:46px; height:26px; border-radius:999px; background:var(--line); position:relative; cursor:pointer; border:none; flex-shrink:0; }
-  .dm-switch::after{ content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
-  .dm-switch.on{ background:var(--teal); }
-  .dm-switch.on::after{ left:23px; }
 </style>
 </head>
 <body>
@@ -286,9 +267,6 @@
         <div class="card"><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
         <div class="card" onclick="toggleBalanceVisibility()" style="grid-column:1 / -1; cursor:pointer;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
       </div>
-      <div class="section-title" id="overdueSectionTitle" style="display:none;">⏰ Late Qistein (Overdue)</div>
-      <div id="overdueList"></div>
-
       <div class="section-title">Recent Payments</div>
       <div id="recentPayments"></div>
     </div>
@@ -310,28 +288,6 @@
 
     <!-- REPORTS -->
     <div class="view" id="view-reports">
-      <div class="section-title" style="margin-top:0;">📈 Monthly Profit Report</div>
-      <div class="card">
-        <input type="month" id="profitMonth" onchange="renderReports()" style="margin-bottom:10px;">
-        <div class="row-between" style="margin-bottom:6px;"><span style="font-size:12px; opacity:.7;">Qistein Wasool Hui</span><span class="mono" id="mpCollected" style="font-weight:700;">Rs. 0</span></div>
-        <div class="row-between" style="margin-bottom:6px;"><span style="font-size:12px; opacity:.7;">Markup Kamaya</span><span class="mono" id="mpMarkup" style="font-weight:700; color:var(--teal);">Rs. 0</span></div>
-        <div class="row-between" style="margin-bottom:6px;"><span style="font-size:12px; opacity:.7;">Kharcha (Expense)</span><span class="mono" id="mpExpense" style="font-weight:700; color:var(--brick);">Rs. 0</span></div>
-        <div class="row-between" style="padding-top:8px; border-top:1px solid var(--line);"><span style="font-size:13px; font-weight:700;">Asal Profit</span><span class="mono" id="mpNetProfit" style="font-weight:700; color:var(--gold);">Rs. 0</span></div>
-        <button class="btn btn-teal btn-block btn-sm" style="margin-top:12px;" onclick="sendMonthlySummaryWhatsApp()">💬 WhatsApp Monthly Summary Bhejein</button>
-      </div>
-
-      <div class="section-title">💸 Kharcha (Expenses)</div>
-      <div class="card">
-        <div class="grid2" style="margin-bottom:8px;">
-          <input type="text" id="expTitle" placeholder="Kharcha (Kiraya, Bijli...)">
-          <input type="number" id="expAmount" placeholder="Amount">
-        </div>
-        <input type="date" id="expDate" style="margin-bottom:8px;">
-        <button class="btn btn-outline-teal btn-block btn-sm" style="margin-bottom:10px;" onclick="addExpense()">+ Kharcha Darj Karein</button>
-        <div id="expenseList"></div>
-        <div class="row-between" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line);"><span style="font-size:12px; font-weight:600;">Is Mahine Total</span><span class="mono" id="expMonthTotal" style="font-weight:700; color:var(--brick);">Rs. 0</span></div>
-      </div>
-
       <div class="section-title" style="margin-top:0;">Daily Report</div>
       <div class="card">
         <input type="date" id="reportDate" onchange="renderReports()" style="margin-bottom:10px;">
@@ -368,12 +324,6 @@
       <div class="card">
         <div style="font-weight:600; font-size:13px; margin-bottom:10px;">🔐 Security</div>
         <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" onclick="openChangePin()">PIN Tabdeel Karein</button>
-      </div>
-      <div class="card">
-        <div class="dm-toggle">
-          <span style="font-weight:600; font-size:13px;">🌙 Dark Mode</span>
-          <button class="dm-switch" id="darkModeSwitch" onclick="toggleDarkMode()"></button>
-        </div>
         <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" id="biometricSetupBtn" onclick="registerBiometric()">👆 Fingerprint / Face Unlock Enable Karein</button>
         <button class="btn btn-outline btn-block" onclick="lockApp()">Abhi Lock Karein</button>
       </div>
@@ -497,8 +447,6 @@
       <button type="button" class="method-btn" onclick="setNpMarkup(30)">30%</button>
       <button type="button" class="method-btn" onclick="setNpMarkup(35)">35%</button>
     </div>
-    <div id="npExtraItemsBox"></div>
-    <button type="button" class="btn btn-outline-teal btn-block btn-sm" style="margin-bottom:10px;" onclick="addNpExtraItem()">+ Aur Item Add Karein (Cover, Charger...)</button>
     <div class="grid2">
       <div class="field"><label>Advance Paid</label><input type="number" id="npAdvance" value="0" oninput="npCalc()"></div>
       <div class="field"><label>Kitni Qistein</label><input type="number" id="npCount" value="1" oninput="npCalc()"></div>
@@ -597,7 +545,6 @@ const BIZ_DOC = db ? db.collection('business').doc('main') : null;
 const STORAGE_KEY = 'guli_shop_installment_data_v1';
 let parties = [];
 let payments = [];
-let expenses = [];
 let currentPartyId = null;
 
 function newId(){ return Date.now()*1000 + Math.floor(Math.random()*1000); }
@@ -620,20 +567,13 @@ function showToast(msg, kind){
 function applyData(data){
   parties = data.parties || [];
   payments = data.payments || [];
-  expenses = data.expenses || [];
 }
 function loadLocal(){
   const raw = localStorage.getItem(STORAGE_KEY);
   if(raw){ try{ applyData(JSON.parse(raw)); }catch(e){} }
 }
 function saveLocal(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ parties, payments, expenses })); }catch(e){}
-}
-// Alias used by auto-reminder code — keeps localStorage + cloud in sync when a
-// party object is mutated in place (autoReminder flag) rather than replaced.
-function save(){
-  saveLocal();
-  if(BIZ_DOC){ BIZ_DOC.set({ parties }, { merge:true }).catch(()=>{}); }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ parties, payments })); }catch(e){}
 }
 function cloudArrayAdd(field, item){
   if(!BIZ_DOC) return;
@@ -722,6 +662,15 @@ function computeNextDue(party){
   const lastDate = sorted[0]?.date || party.startDate || todayStr();
   return addInterval(lastDate, party.frequency || 'Monthly');
 }
+/* Grace date = qist due date + 5 din. Is tareekh tak payment na hone par
+   5% overdue charges lagte hain (reminders aur receipts par dikhaya jata hai). */
+const OVERDUE_GRACE_DAYS = 5;
+const OVERDUE_CHARGE_PERCENT = 5;
+function graceDueDate(dueDate){
+  const d = new Date(dueDate + 'T00:00:00');
+  d.setDate(d.getDate() + OVERDUE_GRACE_DAYS);
+  return d.toISOString().slice(0,10);
+}
 function buildSchedule(party){
   // Future qist schedule — start date se lekar (total - advance) poora wasool hone tak.
   const inst = Number(party.installmentAmount)||0;
@@ -795,15 +744,19 @@ function receiptMessage(party, payment, remainingBalance){
     + '——————————————\nShukriya!\n*Guli Shop* — Easy Installments Available';
 }
 function reminderMessage(party, dueDate, balance){
+  const grace = graceDueDate(dueDate);
   return '*Guli Shop — Qist Reminder*\n——————————————\n'
     + 'Assalam-o-Alaikum ' + party.name + ',\n\n'
     + 'Aap ki agli qist ki yaad dahani:\n\n'
     + 'Item: ' + (party.item||'-') + '\n'
     + 'Qist Amount: ' + fmtMoney(party.installmentAmount||0) + '\n'
     + 'Due Date: ' + fmtDate(dueDate) + '\n'
+    + 'Akhri Tareekh (Grace): ' + fmtDate(grace) + '\n'
     + 'Total Baqaya: ' + fmtMoney(balance) + '\n'
+    + 'Note: Agar ' + fmtDate(grace) + ' se pehle payment na hui to ' + OVERDUE_CHARGE_PERCENT + '% overdue charges lagenge.\n'
     + '——————————————\nBarah-e-karam waqt par ada kar dein. Shukriya!\n'
-    + 'Rabta: ' + SHOP_OWNER + ' — ' + SHOP_PHONE;
+    + 'Rabta: ' + SHOP_OWNER + ' — ' + SHOP_PHONE + '\n'
+    + 'EasyPaisa: ' + SHOP_PHONE2 + ' · JazzCash: ' + SHOP_PHONE;
 }
 function sendReceiptWhatsApp(party, payment, remainingBalance){
   const num = waNumberFor(party.phone);
@@ -875,16 +828,6 @@ function sendReminderWhatsApp(partyId){
   const due = computeNextDue(party);
   const bal = partyBalance(party.id).balance;
   window.open('https://wa.me/'+num+'?text='+encodeURIComponent(reminderMessage(party,due,bal)), '_blank');
-}
-function sendReminderSMS(partyId){
-  const party = parties.find(p=>p.id===partyId);
-  if(!party) return;
-  if(!party.phone){ showToast('Is party ka phone number nahi hai', 'error'); return; }
-  const due = computeNextDue(party);
-  const bal = partyBalance(party.id).balance;
-  const num = waNumberFor(party.phone);
-  // sms: link phone ki apni Messages app khol deta hai, text pehle se likha hota hai — sirf Send dabana hota hai.
-  window.open('sms:'+num+'?body='+encodeURIComponent(reminderMessage(party,due,bal)));
 }
 
 /* ===================== AUTO SMS REMINDER (SCHEDULED) =====================
@@ -1142,6 +1085,7 @@ function buildCardReceiptHTML(partyId, paymentId){
         <div class="cr-shop">Guli Shop and Installment</div>
         <div class="cr-sub">${SHOP_PHONE2}</div>
         <div class="cr-sub">${SHOP_ADDRESS}</div>
+        <div class="cr-sub">EasyPaisa: ${SHOP_PHONE2} · JazzCash: ${SHOP_PHONE}</div>
       </div>
     </div>
     <div class="cr-title">${payable ? 'Payment-Out' : 'Payment-In'}</div>
@@ -1155,11 +1099,16 @@ function buildCardReceiptHTML(partyId, paymentId){
       <div class="cr-line"><span>Current Balance</span><span>${fmtMoney(currentBalance)}</span></div>
     </div>
     <div class="cr-desc"><b>Transaction Description :</b> received via ${payment?payment.method:'-'}</div>
+    ${currentBalance>0 ? `<div class="cr-note">⚠️ Agli qist ki akhri tareekh (grace) se pehle payment na hui to ${OVERDUE_CHARGE_PERCENT}% overdue charges lagenge.</div>` : ''}
     <div class="cr-sign">
       ${SIGNATURE_SVG}
       <div class="cr-shopname">Guli Shop and Installment</div>
     </div>
     <div class="cr-clear"></div>
+    <div class="cr-footer">
+      ${logoSrc ? `<img class="cr-stamp" src="${logoSrc}" alt="Guli Shop Stamp">` : ''}
+      <div class="cr-credit">Software By Fazul Khan Chandio</div>
+    </div>
   `;
   return div;
 }
@@ -1215,6 +1164,7 @@ function buildInvoiceHTML(partyId){
         <div class="cr-shop">Guli Shop and Installment</div>
         <div class="cr-sub">${SHOP_PHONE2}</div>
         <div class="cr-sub">${SHOP_ADDRESS}</div>
+        <div class="cr-sub">EasyPaisa: ${SHOP_PHONE2} · JazzCash: ${SHOP_PHONE}</div>
       </div>
     </div>
     <div class="cr-title">Invoice / Bill</div>
@@ -1223,7 +1173,6 @@ function buildInvoiceHTML(partyId){
     <div class="cr-row"><span>${party.phone||''}</span><span>${party.item?('Item: '+party.item):''}</span></div>
     <div class="cr-box">
       <table class="cr-inv-table">
-        ${(party.items && party.items.length>1) ? party.items.map(it=>`<tr><td>${it.name||'Item'}</td><td>${fmtMoney(it.price)}</td></tr>`).join('') + '<tr><td colspan="2" style="border-top:1px dashed #e4ddcf;"></td></tr>' : ''}
         <tr><td>Payment (Price)</td><td>${fmtMoney(price)}</td></tr>
         <tr><td>+ Markup (${markupPct}%)</td><td>${fmtMoney(markupAmount)}</td></tr>
       </table>
@@ -1232,11 +1181,16 @@ function buildInvoiceHTML(partyId){
       <div class="cr-line"><span>Baqaya</span><span>${fmtMoney(Math.max(totalAmount-(party.advancePaid||0),0))}</span></div>
     </div>
     <div class="cr-desc"><b>Installment Plan:</b> ${count} × ${party.frequency||'Monthly'} qist — ${fmtMoney(party.installmentAmount||0)} har qist</div>
+    <div class="cr-note">⚠️ Har qist ki akhri tareekh (grace, due date se ${OVERDUE_GRACE_DAYS} din baad) se pehle payment na hui to ${OVERDUE_CHARGE_PERCENT}% overdue charges lagenge.</div>
     <div class="cr-sign">
       ${SIGNATURE_SVG}
       <div class="cr-shopname">Guli Shop and Installment</div>
     </div>
     <div class="cr-clear"></div>
+    <div class="cr-footer">
+      ${logoSrc ? `<img class="cr-stamp" src="${logoSrc}" alt="Guli Shop Stamp">` : ''}
+      <div class="cr-credit">Software By Fazul Khan Chandio</div>
+    </div>
   `;
   return div;
 }
@@ -1331,7 +1285,7 @@ function deletePayment(paymentId){
 
 /* ===================== BACKUP / EXPORT ===================== */
 function exportJSON(){
-  const blob = new Blob([JSON.stringify({parties,payments,expenses}, null, 2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify({parties,payments}, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'guli-shop-backup-' + todayStr() + '.json';
@@ -1341,7 +1295,7 @@ function exportJSON(){
 }
 function emailBackupJSON(){
   const filename = 'guli-shop-backup-' + todayStr() + '.json';
-  const jsonText = JSON.stringify({parties,payments,expenses}, null, 2);
+  const jsonText = JSON.stringify({parties,payments}, null, 2);
   const blob = new Blob([jsonText], {type:'application/json'});
   const file = new File([blob], filename, {type:'application/json'});
   const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments (' + todayStr() + ')';
@@ -1369,9 +1323,9 @@ function importJSON(file){
     try{
       const parsed = JSON.parse(e.target.result);
       if(!parsed.parties || !parsed.payments) throw new Error('bad shape');
-      parties = parsed.parties; payments = parsed.payments; expenses = parsed.expenses || [];
+      parties = parsed.parties; payments = parsed.payments;
       saveLocal();
-      if(BIZ_DOC) BIZ_DOC.set({ parties, payments, expenses }, { merge:true }).catch(()=>{});
+      if(BIZ_DOC) BIZ_DOC.set({ parties, payments }, { merge:true }).catch(()=>{});
       renderAll();
       showToast('Backup restore ho gaya');
     }catch(err){
@@ -1521,73 +1475,26 @@ function setNpMarkup(pct){
   document.getElementById('npMarkup').value = pct;
   npCalc();
 }
-
-/* ===================== MULTI-ITEM INVENTORY (Add Party Modal) =====================
-   Ek party ke andar ek se zyada items ho saktay hain (jaise Mobile + Cover).
-   Pehla item hamesha npItem/npPrice fields mein hota hai; baaki "extra" items
-   is array mein rehte hain aur dynamic rows ki soorat mein render hotay hain. */
-let npExtraItems = [];
-function renderNpExtraItems(){
-  const box = document.getElementById('npExtraItemsBox');
-  if(!box) return;
-  box.innerHTML = npExtraItems.map((it,idx)=>`
-    <div style="display:flex; gap:6px; margin-bottom:8px; align-items:center;">
-      <input type="text" style="flex:2;" placeholder="Item naam (Cover, Charger...)" value="${(it.name||'').replace(/"/g,'&quot;')}" oninput="updateNpExtraItem(${idx},'name',this.value)">
-      <input type="number" style="flex:1;" placeholder="Price" value="${it.price||''}" oninput="updateNpExtraItem(${idx},'price',this.value)">
-      <button type="button" class="icon-btn" title="Item hataayein" onclick="removeNpExtraItem(${idx})">🗑️</button>
-    </div>`).join('');
-}
-function addNpExtraItem(){
-  npExtraItems.push({ name:'', price:0 });
-  renderNpExtraItems();
-  npCalc();
-}
-function removeNpExtraItem(idx){
-  npExtraItems.splice(idx,1);
-  renderNpExtraItems();
-  npCalc();
-}
-function updateNpExtraItem(idx, field, value){
-  if(!npExtraItems[idx]) return;
-  npExtraItems[idx][field] = field==='price' ? (Number(value)||0) : value;
-  npCalc();
-}
-// Combined list of every item on this party (main item + extras), used for
-// both the price total and for saving an itemized breakdown on the party.
-function getNpItemsList(){
-  const items = [{ name: document.getElementById('npItem').value.trim(), price: Number(document.getElementById('npPrice').value)||0 }];
-  npExtraItems.forEach(it=>{
-    if((it.name||'').trim() || Number(it.price)>0) items.push({ name:(it.name||'').trim(), price:Number(it.price)||0 });
-  });
-  return items;
-}
-
 // Reads Price + Markup% + Advance + Kitni Qistein and computes Total Payment
-// and the per-installment amount. Price is the sum of the main item plus any
-// extra items added (multi-item support) — customer/staff only ever type prices.
+// and the per-installment amount — customer/staff only ever type the Price.
 function npCalc(){
-  const items = getNpItemsList();
-  const price = items.reduce((s,it)=>s+Number(it.price||0),0);
+  const price = Number(document.getElementById('npPrice').value)||0;
   const markupPct = Number(document.getElementById('npMarkup').value)||0;
   const advance = Number(document.getElementById('npAdvance').value)||0;
   const count = Math.max(Number(document.getElementById('npCount').value)||0, 0);
   const box = document.getElementById('npCalcResult');
-  if(price<=0){ box.innerHTML = '<span style="opacity:.5;">Price daalein — Total aur Qist khud ban jayega</span>'; return {totalAmount:0, installmentAmount:0, markupAmount:0, price:0, items}; }
+  if(price<=0){ box.innerHTML = '<span style="opacity:.5;">Price daalein — Total aur Qist khud ban jayega</span>'; return {totalAmount:0, installmentAmount:0, markupAmount:0}; }
   const markupAmount = price * markupPct / 100;
   const totalAmount = price + markupAmount;
   const remaining = Math.max(totalAmount - advance, 0);
   const installmentAmount = count>0 ? remaining/count : 0;
-  const itemsBreakdown = items.length>1
-    ? items.map(it=>`<div class="row-between" style="font-size:11.5px; opacity:.75;"><span>${it.name||'Item'}</span><span class="mono">${fmtMoney(it.price)}</span></div>`).join('') + '<div style="border-top:1px dashed var(--line); margin:4px 0;"></div>'
-    : '';
   box.innerHTML = `
-    ${itemsBreakdown}
     <div class="row-between"><span>Payment (Price)</span><span class="mono">${fmtMoney(price)}</span></div>
     <div class="row-between"><span>+ Markup (${markupPct}%)</span><span class="mono">${fmtMoney(markupAmount)}</span></div>
     <div class="row-between" style="font-weight:700; border-top:1px solid var(--line); padding-top:6px; margin-top:2px;"><span>Total Payment</span><span class="mono">${fmtMoney(totalAmount)}</span></div>
     ${count>0 ? `<div class="row-between" style="font-weight:700; color:var(--teal);"><span>Monthly Qist (${count})</span><span class="mono">${fmtMoney(installmentAmount)}</span></div>` : ''}
   `;
-  return {totalAmount, installmentAmount, markupAmount, price, items};
+  return {totalAmount, installmentAmount, markupAmount};
 }
 function openAddPartyModal(){
   editingPartyId = null;
@@ -1600,8 +1507,6 @@ function openAddPartyModal(){
   document.getElementById('npFrequency').value = 'Monthly';
   document.getElementById('npStart').value = todayStr();
   document.querySelectorAll('#npTypeRow .method-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
-  npExtraItems = [];
-  renderNpExtraItems();
   npCalc();
   document.getElementById('addPartyModal').style.display = 'flex';
 }
@@ -1624,25 +1529,18 @@ function openEditPartyModal(id){
   document.getElementById('npFrequency').value = party.frequency || 'Monthly';
   document.getElementById('npStart').value = party.startDate || todayStr();
   document.querySelectorAll('#npTypeRow .method-btn').forEach(b=>b.classList.toggle('active', b.dataset.t === (party.partyType||'receivable')));
-  // Multi-item: first item stays in npItem/npPrice, any extras go in npExtraItems.
-  npExtraItems = (party.items && party.items.length>1) ? party.items.slice(1).map(it=>({name:it.name||'', price:Number(it.price)||0})) : [];
-  renderNpExtraItems();
   npCalc();
   document.getElementById('addPartyModal').style.display = 'flex';
 }
 function closeAddPartyModal(){ document.getElementById('addPartyModal').style.display = 'none'; editingPartyId = null; }
 function submitAddParty(){
   const name = document.getElementById('npName').value.trim();
+  const price = document.getElementById('npPrice').value;
+  if(!name || !price){ showToast('Naam aur Price zaroori hai', 'error'); return; }
   const partyType = document.querySelector('#npTypeRow .method-btn.active')?.dataset.t || 'receivable';
   const calc = npCalc();
-  if(!name || !(calc.price>0)){ showToast('Naam aur Price zaroori hai', 'error'); return; }
   const markupPercent = Number(document.getElementById('npMarkup').value||0);
   const installmentCount = Math.max(Number(document.getElementById('npCount').value)||1, 1);
-  // Multi-item: items = [{name,price}, ...] — "item" stays a readable joined
-  // label (e.g. "Samsung + Cover") so every older screen that shows party.item
-  // keeps working without changes.
-  const items = calc.items.filter(it=>it.name || it.price>0);
-  const itemLabel = items.map(it=>it.name).filter(Boolean).join(' + ') || document.getElementById('npItem').value.trim();
   if(editingPartyId){
     const oldParty = parties.find(p=>p.id===editingPartyId);
     if(!oldParty){ closeAddPartyModal(); return; }
@@ -1650,9 +1548,8 @@ function submitAddParty(){
       name,
       partyType,
       phone: document.getElementById('npPhone').value.trim(),
-      item: itemLabel,
-      items,
-      price: calc.price,
+      item: document.getElementById('npItem').value.trim(),
+      price: Number(price),
       markupPercent,
       installmentCount,
       totalAmount: calc.totalAmount,
@@ -1672,9 +1569,8 @@ function submitAddParty(){
     name,
     partyType,
     phone: document.getElementById('npPhone').value.trim(),
-    item: itemLabel,
-    items,
-    price: calc.price,
+    item: document.getElementById('npItem').value.trim(),
+    price: Number(price),
     markupPercent,
     installmentCount,
     totalAmount: calc.totalAmount,
@@ -1706,61 +1602,6 @@ function toggleBalanceVisibility(){
   renderDashboard();
 }
 
-/* ===================== DARK MODE ===================== */
-const DARK_MODE_KEY = 'guli_shop_dark_mode_v1';
-let darkMode = localStorage.getItem(DARK_MODE_KEY) === '1';
-function applyDarkMode(){
-  document.body.classList.toggle('dark', darkMode);
-  const sw = document.getElementById('darkModeSwitch');
-  if(sw) sw.classList.toggle('on', darkMode);
-}
-function toggleDarkMode(){
-  darkMode = !darkMode;
-  try{ localStorage.setItem(DARK_MODE_KEY, darkMode ? '1' : '0'); }catch(e){}
-  applyDarkMode();
-}
-applyDarkMode();
-
-/* ===================== OVERDUE / LATE QISTEIN ===================== */
-function daysBetween(a,b){
-  const d1 = new Date(a+'T00:00:00'), d2 = new Date(b+'T00:00:00');
-  return Math.round((d2-d1)/(1000*60*60*24));
-}
-function getOverdueParties(){
-  const today = todayStr();
-  return parties
-    .filter(p => !isPayable(p) && partyBalance(p.id).balance > 0)
-    .map(p => ({ party:p, due: computeNextDue(p), bal: partyBalance(p.id).balance }))
-    .filter(x => x.due < today)
-    .sort((a,b)=> a.due.localeCompare(b.due));
-}
-function renderOverdueList(){
-  const title = document.getElementById('overdueSectionTitle');
-  const box = document.getElementById('overdueList');
-  if(!title || !box) return;
-  const overdue = getOverdueParties();
-  if(overdue.length===0){
-    title.style.display = 'none';
-    box.innerHTML = '';
-    return;
-  }
-  title.style.display = 'block';
-  title.textContent = `⏰ Late Qistein (Overdue) — ${overdue.length}`;
-  box.innerHTML = overdue.map(x=>{
-    const lateDays = daysBetween(x.due, todayStr());
-    return `<div class="card row-between" style="border-color:var(--brick); cursor:pointer;" onclick="openParty(${x.party.id})">
-      <div>
-        <div style="font-weight:600; font-size:13px;">${x.party.name}</div>
-        <div style="font-size:11px; opacity:.6; margin-top:2px;">Due tha ${fmtDate(x.due)} · ${lateDays} din late</div>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <div class="mono" style="color:var(--brick); font-weight:700; font-size:13px;">${maskMoney(fmtMoney(x.bal))}</div>
-        ${x.party.phone ? `<button class="icon-btn" title="WhatsApp Reminder" onclick="event.stopPropagation(); sendReminderWhatsApp(${x.party.id})">💬</button>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
 /* ===================== RENDER: DASHBOARD ===================== */
 function renderDashboard(){
   const t = computeTotals();
@@ -1770,8 +1611,6 @@ function renderDashboard(){
   document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollected));
   document.getElementById('statActive').textContent = t.activeParties;
   document.getElementById('statPayable').textContent = maskMoney(fmtMoney(t.totalPayableOutstanding));
-
-  renderOverdueList();
 
   const recent = [...payments].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const box = document.getElementById('recentPayments');
@@ -1883,7 +1722,6 @@ function renderPartyDetail(id){
         <div><div class="stat-label">Wasool</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--teal);">${fmtMoney(bal.totalPaid)}</div></div>
         <div><div class="stat-label">${payable?'Dena Hai':'Baqi'}</div><div class="mono" style="font-weight:700; font-size:13px; color:var(--brick);">${fmtMoney(bal.balance)}</div></div>
       </div>
-      ${party.items && party.items.length>1 ? `<div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--line);">${party.items.map(it=>`<div class="row-between" style="font-size:12px; opacity:.75;"><span>${it.name||'Item'}</span><span class="mono">${fmtMoney(it.price)}</span></div>`).join('')}</div>` : ''}
       ${party.price != null ? `<div style="font-size:12px; opacity:.6; margin-top:8px;">Payment: ${fmtMoney(party.price)} + Markup (${party.markupPercent||0}%): ${fmtMoney(party.price*(party.markupPercent||0)/100)} = Total ${fmtMoney(party.totalAmount)}</div>` : ''}
       ${party.installmentAmount ? `<div style="font-size:12px; opacity:.6; margin-top:4px;">Qist: ${fmtMoney(party.installmentAmount)} / ${party.frequency}${party.installmentCount?(' × '+party.installmentCount):''}</div>` : ''}
     </div>
@@ -1891,13 +1729,12 @@ function renderPartyDetail(id){
     ${bal.balance>0 && party.installmentAmount ? `
     <div class="card dashed">
       <div style="font-size:12px; font-weight:700; color:var(--gold); margin-bottom:2px;">📅 Agli Qist Ka Reminder</div>
-      <div style="font-size:12px; opacity:.6; margin-bottom:10px;">${fmtDate(nextDue)} ko due hai</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <a class="btn btn-gold btn-sm" style="flex:1; min-width:120px; text-align:center;" href="${googleCalendarLink(party, nextDue)}" target="_blank" rel="noreferrer">Calendar Mein Add Karein</a>
-        ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1; min-width:120px;" onclick="sendReminderWhatsApp(${party.id})">💬 WhatsApp Reminder</button>` : ''}
-        ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1; min-width:120px;" onclick="sendReminderSMS(${party.id})">✉️ SMS Reminder</button>` : ''}
+      <div style="font-size:12px; opacity:.6; margin-bottom:4px;">${fmtDate(nextDue)} ko due hai — Akhri tareekh (grace): ${fmtDate(graceDueDate(nextDue))}</div>
+      <div style="font-size:11px; color:var(--brick); margin-bottom:10px;">⚠️ Agar ${fmtDate(graceDueDate(nextDue))} se pehle payment na hui to ${OVERDUE_CHARGE_PERCENT}% overdue charges lagenge.</div>
+      <div style="display:flex; gap:8px;">
+        <a class="btn btn-gold btn-sm" style="flex:1; text-align:center;" href="${googleCalendarLink(party, nextDue)}" target="_blank" rel="noreferrer">Calendar Mein Add Karein</a>
+        ${party.phone ? `<button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="sendReminderWhatsApp(${party.id})">💬 WhatsApp Reminder</button>` : ''}
       </div>
-      ${!party.phone ? `<div style="font-size:11px; opacity:.6; margin-top:8px;">SMS/WhatsApp reminder bhejne ke liye is party ka phone number darj karein.</div>` : ''}
       ${party.phone ? `
       <button class="btn ${party.autoReminder?'btn-gold':'btn-outline-teal'} btn-sm btn-block" style="margin-top:8px;" onclick="toggleAutoReminder(${party.id})">
         ${party.autoReminder ? '🔔 Auto-Reminder: ON (baqaya clear hone tak har qist par yaad dilayega)' : '🔕 Auto-Reminder Schedule Karein'}
@@ -1966,100 +1803,8 @@ function submitPayment(partyId){
   openShareModal(partyId, rec.id);
 }
 
-/* ===================== MONTHLY PROFIT + EXPENSES ===================== */
-function monthKey(dateStr){ return (dateStr||'').slice(0,7); }
-function currentProfitMonth(){
-  const el = document.getElementById('profitMonth');
-  if(!el) return todayStr().slice(0,7);
-  if(!el.value) el.value = todayStr().slice(0,7);
-  return el.value;
-}
-function monthlyMarkupTotal(month){
-  return parties
-    .filter(p => monthKey(p.startDate) === month)
-    .reduce((s,p) => s + Number(p.price!=null ? (p.price*(p.markupPercent||0)/100) : 0), 0);
-}
-function monthlyCollectionTotal(month){
-  return payments.filter(p => monthKey(p.date) === month).reduce((s,p)=>s+Number(p.amount||0), 0);
-}
-function monthlyExpenseTotal(month){
-  return expenses.filter(e => monthKey(e.date) === month).reduce((s,e)=>s+Number(e.amount||0), 0);
-}
-function renderMonthlyProfit(){
-  const month = currentProfitMonth();
-  const collected = monthlyCollectionTotal(month);
-  const markup = monthlyMarkupTotal(month);
-  const expenseTotal = monthlyExpenseTotal(month);
-  const net = markup - expenseTotal;
-  document.getElementById('mpCollected').textContent = fmtMoney(collected);
-  document.getElementById('mpMarkup').textContent = fmtMoney(markup);
-  document.getElementById('mpExpense').textContent = fmtMoney(expenseTotal);
-  document.getElementById('mpNetProfit').textContent = fmtMoney(net);
-}
-function addExpense(){
-  const title = (document.getElementById('expTitle').value||'').trim();
-  const amount = Number(document.getElementById('expAmount').value);
-  const date = document.getElementById('expDate').value || todayStr();
-  if(!title || !amount || amount<=0){ showToast('Kharcha ka naam aur amount likhein', 'error'); return; }
-  const rec = { id:newId(), title, amount, date };
-  expenses.push(rec);
-  cloudArrayAdd('expenses', rec);
-  saveLocal();
-  document.getElementById('expTitle').value = '';
-  document.getElementById('expAmount').value = '';
-  showToast('Kharcha darj ho gaya');
-  renderReports();
-}
-function deleteExpense(id){
-  const rec = expenses.find(e=>e.id===id);
-  if(!rec) return;
-  if(!confirmZeroDelete('Ye kharcha ('+fmtMoney(rec.amount)+') delete karna chahte hain?')) return;
-  expenses = expenses.filter(e=>e.id!==id);
-  cloudArrayRemove('expenses', rec);
-  saveLocal();
-  renderReports();
-}
-function renderExpenses(){
-  const month = currentProfitMonth();
-  const list = expenses.filter(e => monthKey(e.date) === month).sort((a,b)=>b.date.localeCompare(a.date));
-  const box = document.getElementById('expenseList');
-  if(list.length===0){
-    box.innerHTML = '<div class="empty">Is mahine koi kharcha darj nahi hua.</div>';
-  } else {
-    box.innerHTML = list.map(e => `
-      <div class="ledger-row">
-        <span>${e.title} <span style="opacity:.5; font-size:11px;">(${fmtDate(e.date)})</span></span>
-        <span style="display:flex; align-items:center; gap:8px;">
-          <span class="mono" style="color:var(--brick); font-weight:700;">${fmtMoney(e.amount)}</span>
-          <button class="icon-btn" title="Delete" onclick="deleteExpense(${e.id})">🗑️</button>
-        </span>
-      </div>`).join('');
-  }
-  document.getElementById('expMonthTotal').textContent = fmtMoney(monthlyExpenseTotal(month));
-}
-function sendMonthlySummaryWhatsApp(){
-  const month = currentProfitMonth();
-  const collected = monthlyCollectionTotal(month);
-  const markup = monthlyMarkupTotal(month);
-  const expenseTotal = monthlyExpenseTotal(month);
-  const net = markup - expenseTotal;
-  const totalOutstanding = computeTotals().totalOutstanding;
-  const [y,m] = month.split('-');
-  const monthLabel = new Date(Number(y), Number(m)-1, 1).toLocaleDateString('en-GB',{month:'long', year:'numeric'});
-  const msg = `*Guli Shop — Monthly Summary (${monthLabel})*\n——————————————\n`
-    + `Qistein Wasool Hui: ${fmtMoney(collected)}\n`
-    + `Markup Kamaya: ${fmtMoney(markup)}\n`
-    + `Kharcha: ${fmtMoney(expenseTotal)}\n`
-    + `Asal Profit: ${fmtMoney(net)}\n`
-    + `Total Baqaya (sab parties): ${fmtMoney(totalOutstanding)}\n`
-    + `——————————————\nGuli Shop and Installment`;
-  window.open('https://wa.me/?text='+encodeURIComponent(msg), '_blank');
-}
-
 /* ===================== RENDER: REPORTS ===================== */
 function renderReports(){
-  renderMonthlyProfit();
-  renderExpenses();
   const dateInput = document.getElementById('reportDate');
   if(!dateInput.value) dateInput.value = todayStr();
   const d = dateInput.value;
@@ -2107,8 +1852,6 @@ function renderAll(){
 }
 loadLocal();
 document.getElementById('reportDate').value = todayStr();
-document.getElementById('expDate').value = todayStr();
-document.getElementById('profitMonth').value = todayStr().slice(0,7);
 renderAll();
 checkDueReminders(); // sirf tab notify karta hai jab permission pehle se granted ho — koi extra popup nahi
 </script>
