@@ -1550,11 +1550,14 @@ function qistCalc(){
 
   // Advance % diya gaya ho to us % ke mutabiq Advance amount khud-ba-khud
   // nikal kar Advance field mein bhar dete hain — Price/Markup/Qistein
-  // kuch bhi badlein, ye hamesha up-to-date rehta hai.
+  // kuch bhi badlein, ye hamesha up-to-date rehta hai. % Price (Payment)
+  // par lagta hai — is liye jab Advance % = Markup % ho to Advance amount
+  // theek Markup Amount ke barabar banta hai, aur baqaya poori Price ban
+  // jati hai (jo phir qiston mein baant di jati hai).
   const advancePct = Number(document.getElementById('qcAdvancePct').value)||0;
   let advance;
   if(advancePct > 0){
-    advance = Math.round(totalPayment * advancePct / 100);
+    advance = Math.round(price * advancePct / 100);
     document.getElementById('qcAdvance').value = advance;
   } else {
     advance = Number(document.getElementById('qcAdvance').value)||0;
