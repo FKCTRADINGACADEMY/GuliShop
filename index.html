@@ -34,11 +34,6 @@
   header .brand .owner{font-size:11px; opacity:.6; margin-top:2px;}
   .content{padding:16px;}
   .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:50; background:var(--teal); color:var(--paper); padding:8px 16px; border-radius:999px; font-size:13px; box-shadow:0 6px 16px rgba(0,0,0,.15); display:none;}
-  .backup-reminder{position:fixed; left:10px; right:10px; bottom:78px; z-index:55; background:#fff3cd; border:1px solid #ffe08a; color:#5c4300; padding:10px 12px; border-radius:12px; font-size:12.5px; box-shadow:0 6px 16px rgba(0,0,0,.18); display:none; align-items:center; gap:8px;}
-  .backup-reminder .brm-text{flex:1; line-height:1.4;}
-  .backup-reminder button{border:none; border-radius:8px; padding:7px 10px; font-size:12px; font-weight:600; cursor:pointer;}
-  .backup-reminder .brm-send{background:var(--teal); color:#fff;}
-  .backup-reminder .brm-close{background:transparent; color:#5c4300; font-size:15px; padding:2px 6px;}
   .toast.error{background:var(--brick);}
   .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px;}
   .vc-card{border-radius:16px; padding:24px 20px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18); position:relative; overflow:hidden;}
@@ -243,12 +238,6 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<!-- Har entry ke baad automatic backup reminder — tap se seedha email ho jaata hai -->
-<div class="backup-reminder" id="backupReminder">
-  <span class="brm-text" id="backupReminderText">Nayi entry save ho gayi — backup email kar dein.</span>
-  <button class="brm-send" onclick="emailBackupJSON(); hideBackupReminder();">✉️ Bhejein</button>
-  <button class="brm-close" onclick="hideBackupReminder()">✕</button>
-</div>
 
 <header>
   <div class="inner">
@@ -324,13 +313,6 @@
         </div>
         <div style="font-size:12px; opacity:.6;" id="cloudStatus">Connecting…</div>
         <div style="font-size:12px; opacity:.5; margin-top:4px;" id="dataCounts">0 parties · 0 payments</div>
-      </div>
-      <div class="card">
-        <div style="font-weight:600; font-size:13px; margin-bottom:8px;">📧 Apna Backup Email</div>
-        <div style="font-size:11px; opacity:.6; margin-bottom:8px;">Ye email set kar dein — har baar poochne ki zaroorat nahi hogi, sirf ek tap mein backup isi par chala jayega. Har nayi entry (party/payment) ke baad app aapko yaad dilayega.</div>
-        <input type="email" id="backupEmailInput" placeholder="aapka.email@example.com" style="width:100%; padding:10px; border:1px solid var(--line); border-radius:10px; font-size:13px; margin-bottom:8px; box-sizing:border-box;">
-        <button class="btn btn-teal btn-block" onclick="saveBackupEmail()">Email Save Karein</button>
-        <div style="font-size:11px; opacity:.55; margin-top:8px;" id="backupReminderStatus"></div>
       </div>
       <div class="card">
         <div style="font-weight:600; font-size:13px; margin-bottom:10px;">Manual Backup</div>
@@ -533,6 +515,16 @@
    3) Authentication > "Sign-in method" > "Anonymous" ko Enable karein (data sync ke liye).
    4) Project Settings (gear icon) > "Your apps" > "</>" (Web) button se app add karein.
    5) Wahan jo "firebaseConfig" object milega, use neeche paste kar dein (apiKey, projectId waghera).
+   6) Firestore Database > "Rules" tab mein ye rules paste karein (data ab
+      "parties" aur "payments" collections mein save hota hai, pehle jaisa
+      ek hi "business/main" document nahi):
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            match /parties/{partyId} { allow read, write: if request.auth != null; }
+            match /payments/{paymentId} { allow read, write: if request.auth != null; }
+          }
+        }
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyA7S0Bx_cEgSfZ6y3hwwYD4PAkgEAhzY-w",
@@ -558,19 +550,14 @@ try{
 }catch(e){
   console.warn('Firebase config set nahi hai — sirf is browser mein (offline) data save hoga.', e);
 }
-/* ---- Per-record documents (fast + scalable cloud sync) ----
-   Pehle poora data ek hi bade document ("business/main") mein save hota
-   tha — har chhoti si entry par bhi PORA array cloud ko bhejna padta tha,
-   jo slow tha aur ek din Firestore ki 1MB document limit se tak sakta tha.
-   Ab har PARTY aur har PAYMENT apni ALAG document hai:
-     business/main/parties/{partyId}
-     business/main/payments/{paymentId}
-   Isse: (1) sirf jo entry badli usi ki chhoti si document sync hoti hai —
-   bahut fast. (2) har party ka record independent/alag hai. (3) do log ek
-   saath offline kaam karein to conflict ka chance bhi kam hota hai. */
-const BIZ_ROOT = db ? db.collection('business').doc('main') : null;
-const PARTIES_COL = BIZ_ROOT ? BIZ_ROOT.collection('parties') : null;
-const PAYMENTS_COL = BIZ_ROOT ? BIZ_ROOT.collection('payments') : null;
+/* Har party ka apna document (parties/{id}), aur har payment ka apna document
+   (payments/{id}) — is se: (1) chhota sa 1 party/1 payment update karne par
+   poora bara record dobara likha/parha nahi jata (pehle jaisa slow tha),
+   (2) Firestore console mein har party ka data alag se milta hai,
+   (3) offline persistence bhi per-document kaam karti hai isliye offline→online
+   aane par sirf jo badla wahi sync hota hai, pura data nahi. */
+const PARTIES_COL = db ? db.collection('parties') : null;
+const PAYMENTS_COL = db ? db.collection('payments') : null;
 </script>
 
 <script>
@@ -579,54 +566,6 @@ const STORAGE_KEY = 'guli_shop_installment_data_v1';
 let parties = [];
 let payments = [];
 let currentPartyId = null;
-
-/* ===================== AUTOMATIC BACKUP REMINDER ===================== */
-const BACKUP_SETTINGS_KEY = 'guli_shop_backup_settings_v1';
-let backupSettings = { email:'', entriesSinceBackup:0, lastBackupAt:null };
-function loadBackupSettings(){
-  try{
-    const raw = localStorage.getItem(BACKUP_SETTINGS_KEY);
-    if(raw) backupSettings = Object.assign(backupSettings, JSON.parse(raw));
-  }catch(e){}
-}
-function saveBackupSettings(){
-  try{ localStorage.setItem(BACKUP_SETTINGS_KEY, JSON.stringify(backupSettings)); }catch(e){}
-}
-function saveBackupEmail(){
-  const val = (document.getElementById('backupEmailInput').value || '').trim();
-  if(val && !/^\S+@\S+\.\S+$/.test(val)){ showToast('Sahi email likhein', 'error'); return; }
-  backupSettings.email = val;
-  saveBackupSettings();
-  showToast(val ? 'Backup email save ho gaya' : 'Backup email hata diya gaya');
-  renderBackup();
-}
-/* Har nayi entry (party ya payment) ke baad chalta hai — chhota reminder
-   dikhata hai taake data hamesha email par bhi mehfooz rahe, sirf device
-   ke bharose na rehna pade. */
-function notifyBackupReminder(){
-  backupSettings.entriesSinceBackup = (backupSettings.entriesSinceBackup||0) + 1;
-  saveBackupSettings();
-  const bar = document.getElementById('backupReminder');
-  const txt = document.getElementById('backupReminderText');
-  if(!bar) return;
-  txt.textContent = backupSettings.email
-    ? ('Entry save ho gayi — backup "' + backupSettings.email + '" par bhej dein.')
-    : 'Entry save ho gayi — apna backup email Settings mein set kar lein.';
-  bar.style.display = 'flex';
-  clearTimeout(window._backupReminderTimer);
-  window._backupReminderTimer = setTimeout(()=>{ bar.style.display = 'none'; }, 8000);
-}
-function hideBackupReminder(){
-  const bar = document.getElementById('backupReminder');
-  if(bar) bar.style.display = 'none';
-  clearTimeout(window._backupReminderTimer);
-}
-function markBackupSent(){
-  backupSettings.entriesSinceBackup = 0;
-  backupSettings.lastBackupAt = new Date().toISOString();
-  saveBackupSettings();
-  renderBackup();
-}
 
 function newId(){ return Date.now()*1000 + Math.floor(Math.random()*1000); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -659,93 +598,106 @@ function saveLocal(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ parties, payments })); }catch(e){}
 }
 
-/* ---- Cloud writes: ek chhoti si document, sirf jo record badla ---- */
+/* ---- Per-document cloud writes (fast: sirf jo record badla wahi likha jata hai) ---- */
 function cloudSetParty(party){
   if(!PARTIES_COL) return;
-  PARTIES_COL.doc(String(party.id)).set(party)
-    .catch(err => console.warn('Cloud party save failed:', err));
+  PARTIES_COL.doc(String(party.id)).set(party).catch(err => console.warn('Cloud party save failed:', err));
 }
-function cloudDeleteParty(id){
+function cloudDeleteParty(partyId){
   if(!PARTIES_COL) return;
-  PARTIES_COL.doc(String(id)).delete().catch(err => console.warn('Cloud party delete failed:', err));
+  PARTIES_COL.doc(String(partyId)).delete().catch(err => console.warn('Cloud party delete failed:', err));
 }
 function cloudSetPayment(payment){
   if(!PAYMENTS_COL) return;
-  PAYMENTS_COL.doc(String(payment.id)).set(payment)
-    .catch(err => console.warn('Cloud payment save failed:', err));
+  PAYMENTS_COL.doc(String(payment.id)).set(payment).catch(err => console.warn('Cloud payment save failed:', err));
 }
-function cloudDeletePayment(id){
+function cloudDeletePayment(paymentId){
   if(!PAYMENTS_COL) return;
-  PAYMENTS_COL.doc(String(id)).delete().catch(err => console.warn('Cloud payment delete failed:', err));
+  PAYMENTS_COL.doc(String(paymentId)).delete().catch(err => console.warn('Cloud payment delete failed:', err));
+}
+/* Backup restore: purana pura data replace karta hai, isliye pehle purani
+   cloud copy hata kar phir naya data batches mein likhte hain (Firestore
+   ek batch mein max 500 operations allow karta hai). */
+async function restoreToCloud(newParties, newPayments){
+  if(!db || !PARTIES_COL || !PAYMENTS_COL) return;
+  try{
+    const [oldPartiesSnap, oldPaymentsSnap] = await Promise.all([PARTIES_COL.get(), PAYMENTS_COL.get()]);
+    const ops = [];
+    oldPartiesSnap.docs.forEach(d => ops.push(['delete', PARTIES_COL.doc(d.id)]));
+    oldPaymentsSnap.docs.forEach(d => ops.push(['delete', PAYMENTS_COL.doc(d.id)]));
+    newParties.forEach(p => ops.push(['set', PARTIES_COL.doc(String(p.id)), p]));
+    newPayments.forEach(p => ops.push(['set', PAYMENTS_COL.doc(String(p.id)), p]));
+    for(let i=0; i<ops.length; i+=450){
+      const batch = db.batch();
+      ops.slice(i, i+450).forEach(op => {
+        if(op[0]==='delete') batch.delete(op[1]); else batch.set(op[1], op[2]);
+      });
+      await batch.commit();
+    }
+  }catch(err){ console.warn('Cloud restore failed:', err); }
 }
 
+/* ---- Realtime sync: parties aur payments do alag collections se, do alag
+   listeners ke zariye. Dono ek dusre ka intezar nahi karte, isliye jo bhi
+   pehle load ho jaye foran dikh jata hai (dashboard jaisa purana pura-doc
+   wala tareeqa slow tha kyunke chhota sa change bhi poora record dobara
+   bhejta/mangata tha). ---- */
 let cloudSyncStarted = false;
-let partiesSyncReady = false, paymentsSyncReady = false;
-function updateCloudStatus(fromCache){
+let partiesSynced = false, paymentsSynced = false;
+let partiesFromCache = true, paymentsFromCache = true;
+let renderScheduled = false;
+function scheduleRender(){
+  if(renderScheduled) return;
+  renderScheduled = true;
+  Promise.resolve().then(()=>{
+    renderScheduled = false;
+    saveLocal();
+    renderAll();
+  });
+}
+function updateCloudStatusText(){
   const status = document.getElementById('cloudStatus');
   if(!status) return;
-  status.textContent = fromCache
+  if(!db){ status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)'; return; }
+  if(!partiesSynced || !paymentsSynced){ status.textContent = '⏳ Connecting…'; return; }
+  status.textContent = (partiesFromCache || paymentsFromCache)
     ? '📡 Offline cache — internet aane par sync hoga'
-    : '☁️ Live — cloud se realtime sync ho raha hai (har party alag document)';
+    : '☁️ Live — cloud se realtime sync ho raha hai';
 }
 function startCloudSync(){
   if(cloudSyncStarted) return;
   cloudSyncStarted = true;
   if(PARTIES_COL && PAYMENTS_COL){
-    /* docChanges() se sirf JO record badla wahi process hota hai — poori
-       list dobara load nahi karni padti, isliye sync bahut fast rehta hai
-       chahe sainkron parties/payments kyun na ho jayein. */
     PARTIES_COL.onSnapshot({ includeMetadataChanges:true }, function(snap){
-      snap.docChanges().forEach(change => {
-        const d = change.doc.data();
-        const idx = parties.findIndex(p => String(p.id) === change.doc.id);
-        if(change.type === 'removed'){
-          if(idx !== -1) parties.splice(idx, 1);
-        } else if(idx !== -1){
-          parties[idx] = d;
-        } else {
-          parties.push(d);
-        }
-      });
-      partiesSyncReady = true;
-      saveLocal();
-      renderAll();
-      updateCloudStatus(snap.metadata.fromCache);
+      parties = snap.docs.map(d => d.data());
+      partiesSynced = true;
+      partiesFromCache = snap.metadata.fromCache;
+      updateCloudStatusText();
+      scheduleRender();
     }, function(err){
-      console.warn('Cloud parties listen failed:', err);
+      console.warn('Parties sync failed:', err);
       const status = document.getElementById('cloudStatus');
       if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
     });
     PAYMENTS_COL.onSnapshot({ includeMetadataChanges:true }, function(snap){
-      snap.docChanges().forEach(change => {
-        const d = change.doc.data();
-        const idx = payments.findIndex(p => String(p.id) === change.doc.id);
-        if(change.type === 'removed'){
-          if(idx !== -1) payments.splice(idx, 1);
-        } else if(idx !== -1){
-          payments[idx] = d;
-        } else {
-          payments.push(d);
-        }
-      });
-      paymentsSyncReady = true;
-      saveLocal();
-      renderAll();
-      updateCloudStatus(snap.metadata.fromCache);
+      payments = snap.docs.map(d => d.data());
+      paymentsSynced = true;
+      paymentsFromCache = snap.metadata.fromCache;
+      updateCloudStatusText();
+      scheduleRender();
     }, function(err){
-      console.warn('Cloud payments listen failed:', err);
+      console.warn('Payments sync failed:', err);
+      const status = document.getElementById('cloudStatus');
+      if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
     });
   } else {
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const status = document.getElementById('cloudStatus');
-      if(status) status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)';
-    });
+    document.addEventListener('DOMContentLoaded', updateCloudStatusText);
   }
 }
-if(!PARTIES_COL){ startCloudSync(); }
-/* When PARTIES_COL exists, startCloudSync() is called from initAuth() only after
-   Firebase login is confirmed — Firestore security rules require request.auth
-   != null, so listening before login would just fail silently. */
+if(!db){ startCloudSync(); }
+/* Jab Firebase configured ho, startCloudSync() initAuth() se login confirm hone
+   ke baad hi call hota hai — Firestore security rules request.auth != null
+   maangte hain, isliye login se pehle listen karna chup-chap fail ho jata. */
 
 /* ===================== BALANCES ===================== */
 function isPayable(party){ return party && party.partyType === 'payable'; }
@@ -1403,16 +1355,15 @@ function addPartyRecord(party){
   cloudSetParty(party);
   saveLocal();
   renderAll();
-  notifyBackupReminder();
 }
 function updatePartyRecord(oldParty, newParty){
   const idx = parties.findIndex(p => p.id === oldParty.id);
   if(idx === -1) return;
   parties[idx] = newParty;
+  // Ab sirf isi party ka document update hota hai — poora array nahi chhua jata.
   cloudSetParty(newParty);
   saveLocal();
   renderAll();
-  notifyBackupReminder();
 }
 function confirmZeroDelete(promptMsg){
   const v = window.prompt(promptMsg + '\n\nConfirm karne ke liye 0 (zero) likhein:');
@@ -1443,7 +1394,6 @@ function addPayment(partyId, payment){
   cloudSetPayment(rec);
   saveLocal();
   renderAll();
-  notifyBackupReminder();
   return rec;
 }
 function deletePayment(paymentId){
@@ -1451,7 +1401,7 @@ function deletePayment(paymentId){
   if(!rec) return;
   if(!confirmZeroDelete('Ye payment entry ('+fmtMoney(rec.amount)+') delete karna chahte hain?')) return;
   payments = payments.filter(p=>p.id!==paymentId);
-  if(rec) cloudDeletePayment(rec.id);
+  cloudDeletePayment(paymentId);
   saveLocal();
   renderPartyDetail(currentPartyId);
   renderDashboard();
@@ -1482,12 +1432,10 @@ function emailBackupJSON(){
     a.href = url; a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    const to = backupSettings.email || '';
     const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
     const body = encodeURIComponent(shareText + '\n\nBackup file "' + filename + '" download ho chuki hai — is email mein attach kar dein.');
-    window.location.href = 'mailto:' + encodeURIComponent(to) + '?subject=' + subject + '&body=' + body;
-    showToast(to ? ('Backup download ho gayi — ' + to + ' ko email karein') : 'Backup download ho gayi — email mein attach kar dein');
-    markBackupSent();
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    showToast('Backup download ho gayi — email mein attach kar dein');
   }
 
   // Pehle system share sheet try karte hain (agar available ho). Pehle
@@ -1500,7 +1448,7 @@ function emailBackupJSON(){
     const file = new File([blob], filename, {type:'application/json'});
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       navigator.share({files:[file], title:'Guli Shop Backup', text:shareText})
-        .then(()=>{ showToast('Backup share ho gayi'); markBackupSent(); })
+        .then(()=>showToast('Backup share ho gayi'))
         .catch(err=>{
           if(err && err.name === 'AbortError') return; // user ne khud cancel kiya
           fallbackDownloadAndMail();
@@ -1520,16 +1468,7 @@ function importJSON(file){
       if(!parsed.parties || !parsed.payments) throw new Error('bad shape');
       parties = parsed.parties; payments = parsed.payments;
       saveLocal();
-      if(PARTIES_COL && PAYMENTS_COL){
-        // Firestore batches allow max 500 writes — chunk safely just in case.
-        const allWrites = parties.map(p => ({col:PARTIES_COL, id:p.id, data:p}))
-          .concat(payments.map(p => ({col:PAYMENTS_COL, id:p.id, data:p})));
-        for(let i=0; i<allWrites.length; i+=450){
-          const batch = db.batch();
-          allWrites.slice(i, i+450).forEach(w => batch.set(w.col.doc(String(w.id)), w.data));
-          batch.commit().catch(err => console.warn('Restore batch failed:', err));
-        }
-      }
+      restoreToCloud(parties, payments);
       renderAll();
       showToast('Backup restore ho gaya');
     }catch(err){
@@ -2081,18 +2020,7 @@ function renderReports(){
 /* ===================== RENDER: BACKUP ===================== */
 function renderBackup(){
   document.getElementById('dataCounts').textContent = parties.length + ' parties · ' + payments.length + ' payments';
-  if(!PARTIES_COL){
-    document.getElementById('cloudStatus').textContent = 'Firebase config set nahi — sirf is device par data';
-  }
-  const emailInput = document.getElementById('backupEmailInput');
-  if(emailInput && document.activeElement !== emailInput) emailInput.value = backupSettings.email || '';
-  const statusEl = document.getElementById('backupReminderStatus');
-  if(statusEl){
-    const last = backupSettings.lastBackupAt
-      ? new Date(backupSettings.lastBackupAt).toLocaleString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})
-      : 'kabhi nahi';
-    statusEl.textContent = 'Aakhri backup: ' + last + ' · ' + (backupSettings.entriesSinceBackup||0) + ' entries iske baad';
-  }
+  updateCloudStatusText();
 }
 
 /* ===================== INIT ===================== */
@@ -2104,7 +2032,6 @@ function renderAll(){
   renderBackup();
 }
 loadLocal();
-loadBackupSettings();
 document.getElementById('reportDate').value = todayStr();
 renderAll();
 checkDueReminders(); // sirf tab notify karta hai jab permission pehle se granted ho — koi extra popup nahi
