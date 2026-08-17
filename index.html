@@ -70,6 +70,34 @@
   .stat-value{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; margin-top:6px;}
   .section-title{font-size:13px; font-weight:600; opacity:.8; margin:18px 0 8px;}
   .empty{border:1px dashed var(--line); border-radius:12px; padding:22px; text-align:center; font-size:13px; opacity:.6;}
+
+  /* ---- Modern Dashboard ---- */
+  .dash-hero{position:relative; overflow:hidden; border-radius:22px; padding:20px 20px 22px; margin-bottom:14px;
+    background:linear-gradient(150deg, #0e5c4c, #0a3f34 55%, #062720); color:#fff; box-shadow:0 10px 26px rgba(14,92,76,.28);}
+  .dash-hero::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 88% -20%, rgba(255,255,255,.16), transparent 55%); pointer-events:none;}
+  .dash-hero::after{content:''; position:absolute; right:-30px; bottom:-40px; width:140px; height:140px; border-radius:50%; background:radial-gradient(circle, rgba(199,154,62,.22), transparent 70%); pointer-events:none;}
+  .dash-hero-top{display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;}
+  .dash-hero-label{font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.75; font-weight:600;}
+  .dash-eye{background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); border-radius:11px; width:36px; height:34px; font-size:15px; cursor:pointer; color:#fff; backdrop-filter:blur(2px);}
+  .dash-hero-value{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:30px; letter-spacing:-.01em; margin-top:6px; position:relative; z-index:1;}
+  .dash-hero-sub{font-size:12px; opacity:.8; margin-top:4px; position:relative; z-index:1;}
+  .dash-hero-bar{height:6px; border-radius:999px; background:rgba(255,255,255,.16); margin-top:16px; overflow:hidden; position:relative; z-index:1;}
+  .dash-hero-bar-fill{height:100%; border-radius:999px; background:linear-gradient(90deg, var(--gold), #e6c877); transition:width .4s ease;}
+  .dash-hero-legend{display:flex; justify-content:space-between; font-size:10.5px; opacity:.78; margin-top:6px; position:relative; z-index:1;}
+
+  .dash-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+  .dash-stat{background:#fff; border:1px solid var(--line); border-radius:16px; padding:13px 14px; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; position:relative;}
+  .dash-stat:active{transform:scale(.97);}
+  .dash-stat-icon{width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:8px;}
+  .dash-stat.wide{grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between;}
+  .dash-stat.wide .dash-stat-icon{margin-bottom:0;}
+  .dash-stat.wide .dash-stat-text{flex:1; margin-left:12px;}
+
+  .dash-recent-item{display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:8px; cursor:pointer;}
+  .dash-avatar{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--teal), #0a3f34); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
+  .dash-recent-info{flex:1; min-width:0;}
+  .dash-recent-name{font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .dash-recent-meta{font-size:11px; opacity:.6; margin-top:1px;}
   input,select{width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; font-size:14px; background:#fff; font-family:inherit; outline:none;}
   label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.04em; opacity:.6; margin-bottom:4px;}
   .field{margin-bottom:10px;}
@@ -256,16 +284,41 @@
 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
-      <div class="row-between" style="margin-bottom:8px;">
-        <span style="font-size:12px; opacity:.6; font-weight:600;">Balance dikhayein ya chupayein</span>
-        <button id="balanceToggleBtn" onclick="toggleBalanceVisibility()" title="Balance chupayein/dikhayein" style="background:none; border:1px solid var(--line); border-radius:10px; width:38px; height:34px; font-size:16px; cursor:pointer;">👁</button>
+      <div class="dash-hero">
+        <div class="dash-hero-top">
+          <span class="dash-hero-label">Baqaya Total</span>
+          <button id="balanceToggleBtn" class="dash-eye" onclick="toggleBalanceVisibility()" title="Balance chupayein/dikhayein">👁</button>
+        </div>
+        <div class="dash-hero-value mono" id="statOutstanding">Rs. 0</div>
+        <div class="dash-hero-sub" id="statActiveNote">0 chalu parties</div>
+        <div class="dash-hero-bar"><div class="dash-hero-bar-fill" id="dashHeroBarFill" style="width:0%;"></div></div>
+        <div class="dash-hero-legend"><span>Wasool Shuda</span><span>Baqaya</span></div>
       </div>
-      <div class="grid2">
-        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Aaj Wasooli</div><div class="stat-value mono" id="statToday">Rs. 0</div></div>
-        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
-        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
-        <div class="card"><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
-        <div class="card" onclick="toggleBalanceVisibility()" style="grid-column:1 / -1; cursor:pointer;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
+      <div class="dash-grid">
+        <div class="dash-stat" onclick="toggleBalanceVisibility()">
+          <div class="dash-stat-icon" style="background:#0E5C4C1A; color:var(--teal);">💰</div>
+          <div class="stat-label">Aaj Wasooli</div>
+          <div class="stat-value mono" id="statToday">Rs. 0</div>
+        </div>
+        <div class="dash-stat" onclick="toggleBalanceVisibility()">
+          <div class="dash-stat-icon" style="background:#C79A3E1F; color:var(--gold);">📈</div>
+          <div class="stat-label">Ab Tak Wasool</div>
+          <div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div>
+        </div>
+        <div class="dash-stat wide">
+          <div class="dash-stat-icon" style="background:#AE41281A; color:var(--brick);">👥</div>
+          <div class="dash-stat-text">
+            <div class="stat-label">Chalu Parties</div>
+            <div class="stat-value mono" id="statActive">0</div>
+          </div>
+        </div>
+        <div class="dash-stat wide" onclick="toggleBalanceVisibility()">
+          <div class="dash-stat-icon" style="background:#0E5C4C1A; color:var(--teal);">🧾</div>
+          <div class="dash-stat-text">
+            <div class="stat-label">Mujhe Dena Hai (Udhaar)</div>
+            <div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div>
+          </div>
+        </div>
       </div>
       <div class="section-title">Recent Payments</div>
       <div id="recentPayments"></div>
@@ -664,11 +717,35 @@ function updateCloudStatusText(){
     ? '📡 Offline cache — internet aane par sync hoga'
     : '☁️ Live — cloud se realtime sync ho raha hai';
 }
+/* Jab is device par purana localStorage data mojood ho lekin cloud (Firestore)
+   abhi khaali ho (naya login, naya Firebase project, ya pehli dafa cloud sync),
+   to onSnapshot('') khaali result deta hai — agar hum seedha "parties = []"
+   kar dein to purana data screen se aur (scheduleRender → saveLocal ke zariye)
+   localStorage se bhi mit jata tha. Ab pehli dafa aisa khaali snapshot aane par
+   hum purana local data delete nahi karte — balke wahi cloud par upload
+   (migrate) kar dete hain, taake "purana data" hamesha mehfooz rahe. */
+let partiesMigrated = false, paymentsMigrated = false;
 function startCloudSync(){
   if(cloudSyncStarted) return;
   cloudSyncStarted = true;
+  // parties/payments already reflect loadLocal() by the time this runs
+  // (called after login, or immediately when Firebase isn't configured) —
+  // capture that snapshot here so an empty first cloud read can be told
+  // apart from "no data anywhere" and migrated up instead of wiping it.
+  const localPartiesAtStart = parties.slice();
+  const localPaymentsAtStart = payments.slice();
   if(PARTIES_COL && PAYMENTS_COL){
     PARTIES_COL.onSnapshot({ includeMetadataChanges:true }, function(snap){
+      if(!partiesMigrated){
+        partiesMigrated = true;
+        if(snap.empty && !snap.metadata.fromCache && localPartiesAtStart.length>0){
+          // Cloud khaali hai lekin is device par purana data hai — usay mitane
+          // ke bajaye cloud par bhej dein (dobara onSnapshot fire hoga, us
+          // waqt cloud se hi naya data aayega).
+          localPartiesAtStart.forEach(p => cloudSetParty(p));
+          return;
+        }
+      }
       parties = snap.docs.map(d => d.data());
       partiesSynced = true;
       partiesFromCache = snap.metadata.fromCache;
@@ -680,6 +757,13 @@ function startCloudSync(){
       if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
     });
     PAYMENTS_COL.onSnapshot({ includeMetadataChanges:true }, function(snap){
+      if(!paymentsMigrated){
+        paymentsMigrated = true;
+        if(snap.empty && !snap.metadata.fromCache && localPaymentsAtStart.length>0){
+          localPaymentsAtStart.forEach(p => cloudSetPayment(p));
+          return;
+        }
+      }
       payments = snap.docs.map(d => d.data());
       paymentsSynced = true;
       paymentsFromCache = snap.metadata.fromCache;
@@ -1794,6 +1878,11 @@ function renderDashboard(){
   document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollected));
   document.getElementById('statActive').textContent = t.activeParties;
   document.getElementById('statPayable').textContent = maskMoney(fmtMoney(t.totalPayableOutstanding));
+  document.getElementById('statActiveNote').textContent = t.activeParties + (t.activeParties===1 ? ' chalu party' : ' chalu parties');
+
+  const cycleTotal = t.totalCollected + t.totalOutstanding;
+  const collectedPct = cycleTotal>0 ? Math.round((t.totalCollected/cycleTotal)*100) : 0;
+  document.getElementById('dashHeroBarFill').style.width = collectedPct + '%';
 
   const recent = [...payments].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const box = document.getElementById('recentPayments');
@@ -1802,10 +1891,12 @@ function renderDashboard(){
   } else {
     box.innerHTML = recent.map(p=>{
       const party = parties.find(x=>x.id===p.partyId);
-      return `<div class="card row-between" style="cursor:pointer; border-style:dashed;" onclick="openParty(${p.partyId})">
-        <div>
-          <div style="font-weight:600; font-size:13px;">${party?.name || 'Unknown'}</div>
-          <div style="font-size:11px; opacity:.6;">${fmtDate(p.date)} · ${p.method}</div>
+      const initial = (party?.name || '?').trim().charAt(0).toUpperCase();
+      return `<div class="dash-recent-item" onclick="openParty(${p.partyId})">
+        <div class="dash-avatar">${initial}</div>
+        <div class="dash-recent-info">
+          <div class="dash-recent-name">${party?.name || 'Unknown'}</div>
+          <div class="dash-recent-meta">${fmtDate(p.date)} · ${p.method}</div>
         </div>
         <div class="mono" style="color:var(--teal); font-weight:700; font-size:13px;">${maskMoney('+' + fmtMoney(p.amount))}</div>
       </div>`;
