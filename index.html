@@ -70,34 +70,6 @@
   .stat-value{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; margin-top:6px;}
   .section-title{font-size:13px; font-weight:600; opacity:.8; margin:18px 0 8px;}
   .empty{border:1px dashed var(--line); border-radius:12px; padding:22px; text-align:center; font-size:13px; opacity:.6;}
-
-  /* ---- Modern Dashboard ---- */
-  .dash-hero{position:relative; overflow:hidden; border-radius:22px; padding:20px 20px 22px; margin-bottom:14px;
-    background:linear-gradient(150deg, #0e5c4c, #0a3f34 55%, #062720); color:#fff; box-shadow:0 10px 26px rgba(14,92,76,.28);}
-  .dash-hero::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 88% -20%, rgba(255,255,255,.16), transparent 55%); pointer-events:none;}
-  .dash-hero::after{content:''; position:absolute; right:-30px; bottom:-40px; width:140px; height:140px; border-radius:50%; background:radial-gradient(circle, rgba(199,154,62,.22), transparent 70%); pointer-events:none;}
-  .dash-hero-top{display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;}
-  .dash-hero-label{font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.75; font-weight:600;}
-  .dash-eye{background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); border-radius:11px; width:36px; height:34px; font-size:15px; cursor:pointer; color:#fff; backdrop-filter:blur(2px);}
-  .dash-hero-value{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:30px; letter-spacing:-.01em; margin-top:6px; position:relative; z-index:1;}
-  .dash-hero-sub{font-size:12px; opacity:.8; margin-top:4px; position:relative; z-index:1;}
-  .dash-hero-bar{height:6px; border-radius:999px; background:rgba(255,255,255,.16); margin-top:16px; overflow:hidden; position:relative; z-index:1;}
-  .dash-hero-bar-fill{height:100%; border-radius:999px; background:linear-gradient(90deg, var(--gold), #e6c877); transition:width .4s ease;}
-  .dash-hero-legend{display:flex; justify-content:space-between; font-size:10.5px; opacity:.78; margin-top:6px; position:relative; z-index:1;}
-
-  .dash-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
-  .dash-stat{background:#fff; border:1px solid var(--line); border-radius:16px; padding:13px 14px; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; position:relative;}
-  .dash-stat:active{transform:scale(.97);}
-  .dash-stat-icon{width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:8px;}
-  .dash-stat.wide{grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between;}
-  .dash-stat.wide .dash-stat-icon{margin-bottom:0;}
-  .dash-stat.wide .dash-stat-text{flex:1; margin-left:12px;}
-
-  .dash-recent-item{display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin-bottom:8px; cursor:pointer;}
-  .dash-avatar{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--teal), #0a3f34); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0;}
-  .dash-recent-info{flex:1; min-width:0;}
-  .dash-recent-name{font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .dash-recent-meta{font-size:11px; opacity:.6; margin-top:1px;}
   input,select{width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; font-size:14px; background:#fff; font-family:inherit; outline:none;}
   label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.04em; opacity:.6; margin-bottom:4px;}
   .field{margin-bottom:10px;}
@@ -284,41 +256,16 @@
 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
-      <div class="dash-hero">
-        <div class="dash-hero-top">
-          <span class="dash-hero-label">Baqaya Total</span>
-          <button id="balanceToggleBtn" class="dash-eye" onclick="toggleBalanceVisibility()" title="Balance chupayein/dikhayein">👁</button>
-        </div>
-        <div class="dash-hero-value mono" id="statOutstanding">Rs. 0</div>
-        <div class="dash-hero-sub" id="statActiveNote">0 chalu parties</div>
-        <div class="dash-hero-bar"><div class="dash-hero-bar-fill" id="dashHeroBarFill" style="width:0%;"></div></div>
-        <div class="dash-hero-legend"><span>Wasool Shuda</span><span>Baqaya</span></div>
+      <div class="row-between" style="margin-bottom:8px;">
+        <span style="font-size:12px; opacity:.6; font-weight:600;">Balance dikhayein ya chupayein</span>
+        <button id="balanceToggleBtn" onclick="toggleBalanceVisibility()" title="Balance chupayein/dikhayein" style="background:none; border:1px solid var(--line); border-radius:10px; width:38px; height:34px; font-size:16px; cursor:pointer;">👁</button>
       </div>
-      <div class="dash-grid">
-        <div class="dash-stat" onclick="toggleBalanceVisibility()">
-          <div class="dash-stat-icon" style="background:#0E5C4C1A; color:var(--teal);">💰</div>
-          <div class="stat-label">Aaj Wasooli</div>
-          <div class="stat-value mono" id="statToday">Rs. 0</div>
-        </div>
-        <div class="dash-stat" onclick="toggleBalanceVisibility()">
-          <div class="dash-stat-icon" style="background:#C79A3E1F; color:var(--gold);">📈</div>
-          <div class="stat-label">Ab Tak Wasool</div>
-          <div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div>
-        </div>
-        <div class="dash-stat wide">
-          <div class="dash-stat-icon" style="background:#AE41281A; color:var(--brick);">👥</div>
-          <div class="dash-stat-text">
-            <div class="stat-label">Chalu Parties</div>
-            <div class="stat-value mono" id="statActive">0</div>
-          </div>
-        </div>
-        <div class="dash-stat wide" onclick="toggleBalanceVisibility()">
-          <div class="dash-stat-icon" style="background:#0E5C4C1A; color:var(--teal);">🧾</div>
-          <div class="dash-stat-text">
-            <div class="stat-label">Mujhe Dena Hai (Udhaar)</div>
-            <div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div>
-          </div>
-        </div>
+      <div class="grid2">
+        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Aaj Wasooli</div><div class="stat-value mono" id="statToday">Rs. 0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
+        <div class="card"><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
+        <div class="card" onclick="toggleBalanceVisibility()" style="grid-column:1 / -1; cursor:pointer;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
       </div>
       <div class="section-title">Recent Payments</div>
       <div id="recentPayments"></div>
@@ -351,6 +298,17 @@
         <div id="dailyPaymentsList"></div>
         <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadDailyCSV()">⬇ Google Sheet (CSV) Download</button>
       </div>
+      <div class="section-title">Business Overview — Pichle 7 Din</div>
+      <div class="card">
+        <div class="grid2" style="margin-bottom:12px;">
+          <div><div class="stat-label">Wasooli (7 din)</div><div class="stat-value mono" id="statWeekIncome" style="color:var(--teal);">Rs. 0</div></div>
+          <div><div class="stat-label">Kharcha (7 din)</div><div class="stat-value mono" id="statWeekExpense" style="color:var(--brick);">Rs. 0</div></div>
+        </div>
+        <div id="weekBarChart" style="display:flex; align-items:flex-end; gap:6px; height:120px; border-bottom:1px solid var(--line); padding-bottom:4px;"></div>
+        <div id="weekBarLabels" style="display:flex; gap:6px; font-size:9px; opacity:.6; margin-top:4px; text-align:center;"></div>
+        <div style="font-size:10px; opacity:.55; margin-top:8px;"><span style="color:var(--teal);">■</span> Wasooli &nbsp; <span style="color:var(--brick);">■</span> Kharcha</div>
+      </div>
+
       <div class="section-title">All Party Report</div>
       <div class="card">
         <div id="allPartyRows" style="max-height:280px; overflow-y:auto;"></div>
@@ -368,7 +326,9 @@
         <div style="font-size:12px; opacity:.5; margin-top:4px;" id="dataCounts">0 parties · 0 payments</div>
       </div>
       <div class="card">
-        <div style="font-weight:600; font-size:13px; margin-bottom:10px;">Manual Backup</div>
+        <div style="font-weight:600; font-size:13px; margin-bottom:6px;">Manual Backup</div>
+        <div style="font-size:11px; opacity:.6; margin-bottom:2px;" id="lastBackupInfo">Abhi tak koi email backup nahi hua</div>
+        <div style="font-size:11px; opacity:.55; margin-bottom:10px;">Roz 1 baar reminder aayega — backup <b class="mono">gulishopinstallment@gmail.com</b> par jaata hai</div>
         <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="exportJSON()">⬇ JSON Backup Download Karein</button>
         <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" onclick="emailBackupJSON()">✉️ Email Se Backup Bhejein</button>
         <button class="btn btn-outline btn-block" onclick="document.getElementById('importFile').click()">⬆ Backup Se Restore Karein</button>
@@ -447,6 +407,111 @@
       </div>
     </div>
 
+    <!-- STOCK / INVENTORY -->
+    <div class="view" id="view-stock">
+      <div class="searchbar">
+        <input id="stockSearch" placeholder="Item dhoondein" oninput="renderStockList()">
+        <button class="btn btn-teal" onclick="openAddStockModal()">+ Item</button>
+      </div>
+      <div class="card" id="lowStockCard" style="display:none; background:#AE412818; border-color:var(--brick);">
+        <div style="font-weight:600; font-size:12.5px; color:var(--brick);">⚠️ Low Stock Alert</div>
+        <div id="lowStockList" style="font-size:12px; margin-top:6px;"></div>
+      </div>
+      <div id="stockListBody"></div>
+    </div>
+
+    <!-- KHARCHA / EXPENSES -->
+    <div class="view" id="view-kharcha">
+      <div class="row-between" style="margin-bottom:10px;">
+        <span style="font-size:12px; opacity:.6; font-weight:600;">Dukan ke roz-marra kharche</span>
+        <button class="btn btn-teal btn-sm" onclick="openAddExpenseModal()">+ Kharcha</button>
+      </div>
+      <div class="grid2" style="margin-bottom:10px;">
+        <div class="card"><div class="stat-label">Is Mahine Kharcha</div><div class="stat-value mono" id="statMonthExpense" style="color:var(--brick);">Rs. 0</div></div>
+        <div class="card"><div class="stat-label">Aaj Kharcha</div><div class="stat-value mono" id="statTodayExpense" style="color:var(--brick);">Rs. 0</div></div>
+      </div>
+      <div id="kharchaListBody"></div>
+      <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadExpenseCSV()">⬇ Kharcha CSV Download Karein</button>
+    </div>
+
+    <!-- MORE HUB -->
+    <div class="view" id="view-more">
+      <div class="section-title" style="margin-top:0;">Zyada Features</div>
+      <div class="party-item" onclick="showView('accounts')"><div class="pname">🏦 Accounts (Cash / Bank)</div><div class="pmeta">Har account ka balance dekhein</div></div>
+      <div class="party-item" onclick="showView('calculator')"><div class="pname">🧮 Qist Calculator</div><div class="pmeta">Installment plan nikalein</div></div>
+      <div class="party-item" onclick="showView('cards')"><div class="pname">🎴 Cards & Greetings</div><div class="pmeta">Visiting card, Eid/greeting cards</div></div>
+      <div class="party-item" onclick="showView('backup')"><div class="pname">⬇ Backup & Security</div><div class="pmeta">Cloud sync, backup, PIN, biometric</div></div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="view" id="view-accounts">
+      <button class="btn-outline btn btn-sm" style="margin-bottom:12px;" onclick="showView('more')">← Wapas</button>
+      <div class="row-between" style="margin-bottom:10px;">
+        <span style="font-size:12px; opacity:.6; font-weight:600;">Cash aur Bank/Wallet accounts ka balance</span>
+        <button class="btn btn-teal btn-sm" onclick="openAdjustAccountModal()">+ Adjust</button>
+      </div>
+      <div id="accountsListBody"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD STOCK ITEM MODAL -->
+<div class="modal-backdrop" id="addStockModal" style="display:none;">
+  <div class="modal">
+    <div class="row-between"><h3>Stock Item</h3><button class="close-x" onclick="closeAddStockModal()">✕</button></div>
+    <div class="field"><label>Item Naam</label><input id="stkName" placeholder="Item ka naam"></div>
+    <div class="grid2">
+      <div class="field"><label>Quantity</label><input id="stkQty" type="number" value="0"></div>
+      <div class="field"><label>Unit</label><input id="stkUnit" placeholder="pcs / kg / dozen" value="pcs"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Cost Price</label><input id="stkCost" type="number" value="0"></div>
+      <div class="field"><label>Sale Price</label><input id="stkSale" type="number" value="0"></div>
+    </div>
+    <div class="field"><label>Low Stock Alert (is se kam ho to warn karein)</label><input id="stkLow" type="number" value="5"></div>
+    <button class="btn btn-teal btn-block" onclick="submitAddStock()">Save Karein</button>
+  </div>
+</div>
+
+<!-- ADD EXPENSE MODAL -->
+<div class="modal-backdrop" id="addExpenseModal" style="display:none;">
+  <div class="modal">
+    <div class="row-between"><h3>Naya Kharcha</h3><button class="close-x" onclick="closeAddExpenseModal()">✕</button></div>
+    <div class="field"><label>Category</label>
+      <select id="expCategory">
+        <option>Rent</option><option>Salary</option><option>Bijli/Utility</option>
+        <option>Maal Kharid (Purchase)</option><option>Transport</option><option>Misc</option>
+      </select>
+    </div>
+    <div class="field"><label>Amount</label><input id="expAmount" type="number"></div>
+    <div class="field"><label>Account (kis se ada kiya)</label>
+      <select id="expAccount"></select>
+    </div>
+    <div class="field"><label>Date</label><input id="expDate" type="date"></div>
+    <div class="field"><label>Note (optional)</label><input id="expNote" placeholder="Tafseel"></div>
+    <button class="btn btn-teal btn-block" onclick="submitAddExpense()">Save Karein</button>
+  </div>
+</div>
+
+<!-- ACCOUNT ADJUST MODAL -->
+<div class="modal-backdrop" id="adjustAccountModal" style="display:none;">
+  <div class="modal">
+    <div class="row-between"><h3>Account Adjust Karein</h3><button class="close-x" onclick="closeAdjustAccountModal()">✕</button></div>
+    <div class="field"><label>Account</label><select id="adjAccount"></select></div>
+    <div class="field"><label>Amount (jama ke liye +, nikaalne ke liye -)</label><input id="adjAmount" type="number" placeholder="e.g. 5000 ya -2000"></div>
+    <div class="field"><label>Note</label><input id="adjNote" placeholder="Wajah likhein"></div>
+    <button class="btn btn-teal btn-block" onclick="submitAdjustAccount()">Save Karein</button>
+  </div>
+</div>
+
+<!-- DAILY BACKUP REMINDER MODAL -->
+<div class="modal-backdrop" id="backupReminderModal" style="display:none;">
+  <div class="modal">
+    <div class="row-between"><h3>☁️ Aaj Ka Backup</h3><button class="close-x" onclick="closeBackupReminder()">✕</button></div>
+    <div style="font-size:13px; opacity:.75; margin-bottom:14px; line-height:1.6;">Roz ka data mehfooz rakhne ke liye backup email par bhej dein — <b class="mono">gulishopinstallment@gmail.com</b></div>
+    <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="backupReminderSend()">✉️ Abhi Email Karein</button>
+    <button class="btn btn-outline btn-block" onclick="closeBackupReminder()">Baad Mein</button>
   </div>
 </div>
 
@@ -454,10 +519,10 @@
   <div class="inner">
     <button data-tab="dashboard" onclick="showView('dashboard')">📊<span>Dashboard</span></button>
     <button data-tab="parties" onclick="showView('parties')">👥<span>Parties</span></button>
+    <button data-tab="stock" onclick="showView('stock')">📦<span>Stock</span></button>
+    <button data-tab="kharcha" onclick="showView('kharcha')">💸<span>Kharcha</span></button>
     <button data-tab="reports" onclick="showView('reports')">📄<span>Reports</span></button>
-    <button data-tab="calculator" onclick="showView('calculator')">🧮<span>Calc</span></button>
-    <button data-tab="backup" onclick="showView('backup')">⬇<span>Backup</span></button>
-    <button data-tab="cards" onclick="showView('cards')">🎴<span>Cards</span></button>
+    <button data-tab="more" onclick="showView('more')">⋯<span>More</span></button>
   </div>
 </nav>
 
@@ -506,6 +571,10 @@
     <div class="grid2">
       <div class="field"><label>Advance Paid</label><input type="number" id="npAdvance" value="0" oninput="npCalc()"></div>
       <div class="field"><label>Kitni Qistein</label><input type="number" id="npCount" value="6" oninput="npCalc()"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>GST/Tax % (optional)</label><input type="number" id="npGst" value="0"></div>
+      <div class="field"><label>Stock Item (optional)</label><select id="npStockItem"><option value="">— Link nahi karna —</option></select></div>
     </div>
     <div class="field"><label>Frequency</label>
       <select id="npFrequency"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
@@ -568,16 +637,6 @@
    3) Authentication > "Sign-in method" > "Anonymous" ko Enable karein (data sync ke liye).
    4) Project Settings (gear icon) > "Your apps" > "</>" (Web) button se app add karein.
    5) Wahan jo "firebaseConfig" object milega, use neeche paste kar dein (apiKey, projectId waghera).
-   6) Firestore Database > "Rules" tab mein ye rules paste karein (data ab
-      "parties" aur "payments" collections mein save hota hai, pehle jaisa
-      ek hi "business/main" document nahi):
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            match /parties/{partyId} { allow read, write: if request.auth != null; }
-            match /payments/{paymentId} { allow read, write: if request.auth != null; }
-          }
-        }
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyA7S0Bx_cEgSfZ6y3hwwYD4PAkgEAhzY-w",
@@ -603,22 +662,29 @@ try{
 }catch(e){
   console.warn('Firebase config set nahi hai — sirf is browser mein (offline) data save hoga.', e);
 }
-/* Har party ka apna document (parties/{id}), aur har payment ka apna document
-   (payments/{id}) — is se: (1) chhota sa 1 party/1 payment update karne par
-   poora bara record dobara likha/parha nahi jata (pehle jaisa slow tha),
-   (2) Firestore console mein har party ka data alag se milta hai,
-   (3) offline persistence bhi per-document kaam karti hai isliye offline→online
-   aane par sirf jo badla wahi sync hota hai, pura data nahi. */
-const PARTIES_COL = db ? db.collection('parties') : null;
-const PAYMENTS_COL = db ? db.collection('payments') : null;
+const BIZ_DOC = db ? db.collection('business').doc('main') : null;
 </script>
 
 <script>
 /* ===================== DATA MODEL ===================== */
 const STORAGE_KEY = 'guli_shop_installment_data_v1';
+const BACKUP_EMAIL = 'gulishopinstallment@gmail.com';
 let parties = [];
 let payments = [];
+let stock = [];
+let expenses = [];
+let accounts = [];
+let adjustments = [];
 let currentPartyId = null;
+
+function ensureDefaultAccounts(){
+  const names = ['Cash','EasyPaisa','JazzCash','Bank'];
+  names.forEach(n=>{
+    if(!accounts.find(a=>a.name===n)){
+      accounts.push({ id:newId(), name:n, opening:0 });
+    }
+  });
+}
 
 function newId(){ return Date.now()*1000 + Math.floor(Math.random()*1000); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -637,151 +703,71 @@ function showToast(msg, kind){
   window._toastTimer = setTimeout(()=>{ t.style.display = 'none'; }, 2600);
 }
 
+function applyData(data){
+  parties = data.parties || [];
+  payments = data.payments || [];
+  stock = data.stock || [];
+  expenses = data.expenses || [];
+  accounts = data.accounts || [];
+  adjustments = data.adjustments || [];
+  ensureDefaultAccounts();
+}
 function loadLocal(){
   const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw){
-    try{
-      const data = JSON.parse(raw);
-      parties = data.parties || [];
-      payments = data.payments || [];
-    }catch(e){}
-  }
+  if(raw){ try{ applyData(JSON.parse(raw)); }catch(e){ ensureDefaultAccounts(); } }
+  else { ensureDefaultAccounts(); }
 }
 function saveLocal(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ parties, payments })); }catch(e){}
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ parties, payments, stock, expenses, accounts, adjustments })); }catch(e){}
+}
+function cloudArrayAdd(field, item){
+  if(!BIZ_DOC) return;
+  BIZ_DOC.set({ [field]: firebase.firestore.FieldValue.arrayUnion(item) }, { merge:true })
+    .catch(err => console.warn('Cloud add failed:', err));
+}
+function cloudArrayRemove(field, item){
+  if(!BIZ_DOC) return;
+  BIZ_DOC.set({ [field]: firebase.firestore.FieldValue.arrayRemove(item) }, { merge:true })
+    .catch(err => console.warn('Cloud remove failed:', err));
 }
 
-/* ---- Per-document cloud writes (fast: sirf jo record badla wahi likha jata hai) ---- */
-function cloudSetParty(party){
-  if(!PARTIES_COL) return;
-  PARTIES_COL.doc(String(party.id)).set(party).catch(err => console.warn('Cloud party save failed:', err));
-}
-function cloudDeleteParty(partyId){
-  if(!PARTIES_COL) return;
-  PARTIES_COL.doc(String(partyId)).delete().catch(err => console.warn('Cloud party delete failed:', err));
-}
-function cloudSetPayment(payment){
-  if(!PAYMENTS_COL) return;
-  PAYMENTS_COL.doc(String(payment.id)).set(payment).catch(err => console.warn('Cloud payment save failed:', err));
-}
-function cloudDeletePayment(paymentId){
-  if(!PAYMENTS_COL) return;
-  PAYMENTS_COL.doc(String(paymentId)).delete().catch(err => console.warn('Cloud payment delete failed:', err));
-}
-/* Backup restore: purana pura data replace karta hai, isliye pehle purani
-   cloud copy hata kar phir naya data batches mein likhte hain (Firestore
-   ek batch mein max 500 operations allow karta hai). */
-async function restoreToCloud(newParties, newPayments){
-  if(!db || !PARTIES_COL || !PAYMENTS_COL) return;
-  try{
-    const [oldPartiesSnap, oldPaymentsSnap] = await Promise.all([PARTIES_COL.get(), PAYMENTS_COL.get()]);
-    const ops = [];
-    oldPartiesSnap.docs.forEach(d => ops.push(['delete', PARTIES_COL.doc(d.id)]));
-    oldPaymentsSnap.docs.forEach(d => ops.push(['delete', PAYMENTS_COL.doc(d.id)]));
-    newParties.forEach(p => ops.push(['set', PARTIES_COL.doc(String(p.id)), p]));
-    newPayments.forEach(p => ops.push(['set', PAYMENTS_COL.doc(String(p.id)), p]));
-    for(let i=0; i<ops.length; i+=450){
-      const batch = db.batch();
-      ops.slice(i, i+450).forEach(op => {
-        if(op[0]==='delete') batch.delete(op[1]); else batch.set(op[1], op[2]);
-      });
-      await batch.commit();
-    }
-  }catch(err){ console.warn('Cloud restore failed:', err); }
-}
-
-/* ---- Realtime sync: parties aur payments do alag collections se, do alag
-   listeners ke zariye. Dono ek dusre ka intezar nahi karte, isliye jo bhi
-   pehle load ho jaye foran dikh jata hai (dashboard jaisa purana pura-doc
-   wala tareeqa slow tha kyunke chhota sa change bhi poora record dobara
-   bhejta/mangata tha). ---- */
 let cloudSyncStarted = false;
-let partiesSynced = false, paymentsSynced = false;
-let partiesFromCache = true, paymentsFromCache = true;
-let renderScheduled = false;
-function scheduleRender(){
-  if(renderScheduled) return;
-  renderScheduled = true;
-  Promise.resolve().then(()=>{
-    renderScheduled = false;
-    saveLocal();
-    renderAll();
-  });
-}
-function updateCloudStatusText(){
-  const status = document.getElementById('cloudStatus');
-  if(!status) return;
-  if(!db){ status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)'; return; }
-  if(!partiesSynced || !paymentsSynced){ status.textContent = '⏳ Connecting…'; return; }
-  status.textContent = (partiesFromCache || paymentsFromCache)
-    ? '📡 Offline cache — internet aane par sync hoga'
-    : '☁️ Live — cloud se realtime sync ho raha hai';
-}
-/* Jab is device par purana localStorage data mojood ho lekin cloud (Firestore)
-   abhi khaali ho (naya login, naya Firebase project, ya pehli dafa cloud sync),
-   to onSnapshot('') khaali result deta hai — agar hum seedha "parties = []"
-   kar dein to purana data screen se aur (scheduleRender → saveLocal ke zariye)
-   localStorage se bhi mit jata tha. Ab pehli dafa aisa khaali snapshot aane par
-   hum purana local data delete nahi karte — balke wahi cloud par upload
-   (migrate) kar dete hain, taake "purana data" hamesha mehfooz rahe. */
-let partiesMigrated = false, paymentsMigrated = false;
 function startCloudSync(){
   if(cloudSyncStarted) return;
   cloudSyncStarted = true;
-  // parties/payments already reflect loadLocal() by the time this runs
-  // (called after login, or immediately when Firebase isn't configured) —
-  // capture that snapshot here so an empty first cloud read can be told
-  // apart from "no data anywhere" and migrated up instead of wiping it.
-  const localPartiesAtStart = parties.slice();
-  const localPaymentsAtStart = payments.slice();
-  if(PARTIES_COL && PAYMENTS_COL){
-    PARTIES_COL.onSnapshot({ includeMetadataChanges:true }, function(snap){
-      if(!partiesMigrated){
-        partiesMigrated = true;
-        if(snap.empty && !snap.metadata.fromCache && localPartiesAtStart.length>0){
-          // Cloud khaali hai lekin is device par purana data hai — usay mitane
-          // ke bajaye cloud par bhej dein (dobara onSnapshot fire hoga, us
-          // waqt cloud se hi naya data aayega).
-          localPartiesAtStart.forEach(p => cloudSetParty(p));
-          return;
-        }
+  if(BIZ_DOC){
+    BIZ_DOC.onSnapshot({ includeMetadataChanges:true }, function(doc){
+      if(doc.exists){
+        applyData(doc.data());
+        saveLocal();
+        renderAll();
       }
-      parties = snap.docs.map(d => d.data());
-      partiesSynced = true;
-      partiesFromCache = snap.metadata.fromCache;
-      updateCloudStatusText();
-      scheduleRender();
-    }, function(err){
-      console.warn('Parties sync failed:', err);
       const status = document.getElementById('cloudStatus');
-      if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
-    });
-    PAYMENTS_COL.onSnapshot({ includeMetadataChanges:true }, function(snap){
-      if(!paymentsMigrated){
-        paymentsMigrated = true;
-        if(snap.empty && !snap.metadata.fromCache && localPaymentsAtStart.length>0){
-          localPaymentsAtStart.forEach(p => cloudSetPayment(p));
-          return;
-        }
+      if(status){
+        status.textContent = doc.metadata.fromCache
+          ? '📡 Offline cache — internet aane par sync hoga'
+          : '☁️ Live — cloud se realtime sync ho raha hai';
       }
-      payments = snap.docs.map(d => d.data());
-      paymentsSynced = true;
-      paymentsFromCache = snap.metadata.fromCache;
-      updateCloudStatusText();
-      scheduleRender();
     }, function(err){
-      console.warn('Payments sync failed:', err);
+      console.warn('Cloud listen failed:', err);
       const status = document.getElementById('cloudStatus');
+      // Show the real Firebase error code so the problem can actually be diagnosed
+      // (common causes: Firestore Security Rules blocking the request, Email/Password
+      // sign-in not enabled in Firebase Console > Authentication, or this domain not
+      // listed under Authentication > Settings > Authorized domains).
       if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
     });
   } else {
-    document.addEventListener('DOMContentLoaded', updateCloudStatusText);
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const status = document.getElementById('cloudStatus');
+      if(status) status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)';
+    });
   }
 }
-if(!db){ startCloudSync(); }
-/* Jab Firebase configured ho, startCloudSync() initAuth() se login confirm hone
-   ke baad hi call hota hai — Firestore security rules request.auth != null
-   maangte hain, isliye login se pehle listen karna chup-chap fail ho jata. */
+if(!BIZ_DOC){ startCloudSync(); }
+/* When BIZ_DOC exists, startCloudSync() is called from initAuth() only after
+   Firebase login is confirmed — Firestore security rules require request.auth
+   != null, so listening before login would just fail silently. */
 
 /* ===================== BALANCES ===================== */
 function isPayable(party){ return party && party.partyType === 'payable'; }
@@ -1363,6 +1349,8 @@ function buildInvoiceHTML(partyId){
   const price = party.price != null ? party.price : party.totalAmount;
   const markupPct = party.markupPercent || 0;
   const markupAmount = price * markupPct / 100;
+  const gstPct = party.gstPercent || 0;
+  const gstAmount = gstPct ? (price + markupAmount) * gstPct / 100 : 0;
   const totalAmount = party.totalAmount;
   const count = party.installmentCount || 1;
   const div = document.getElementById('invoiceReceipt');
@@ -1384,6 +1372,7 @@ function buildInvoiceHTML(partyId){
       <table class="cr-inv-table">
         <tr><td>Payment (Price)</td><td>${fmtMoney(price)}</td></tr>
         <tr><td>+ Markup (${markupPct}%)</td><td>${fmtMoney(markupAmount)}</td></tr>
+        ${gstPct ? `<tr><td>+ GST/Tax (${gstPct}%)</td><td>${fmtMoney(gstAmount)}</td></tr>` : ''}
       </table>
       <div class="cr-line total"><span>Total Payment</span><span>${fmtMoney(totalAmount)}</span></div>
       <div class="cr-line sub"><span>Advance Paid</span><span>${fmtMoney(party.advancePaid||0)}</span></div>
@@ -1436,7 +1425,7 @@ function shareInvoiceImage(partyId){
 /* ===================== CRUD ===================== */
 function addPartyRecord(party){
   parties.push(party);
-  cloudSetParty(party);
+  cloudArrayAdd('parties', party);
   saveLocal();
   renderAll();
 }
@@ -1444,8 +1433,9 @@ function updatePartyRecord(oldParty, newParty){
   const idx = parties.findIndex(p => p.id === oldParty.id);
   if(idx === -1) return;
   parties[idx] = newParty;
-  // Ab sirf isi party ka document update hota hai — poora array nahi chhua jata.
-  cloudSetParty(newParty);
+  // Firestore arrays don't support "update in place" — remove the old object, add the new one.
+  cloudArrayRemove('parties', oldParty);
+  cloudArrayAdd('parties', newParty);
   saveLocal();
   renderAll();
 }
@@ -1466,8 +1456,8 @@ function deleteParty(id){
   parties = parties.filter(p=>p.id!==id);
   const removedPayments = payments.filter(p=>p.partyId===id);
   payments = payments.filter(p=>p.partyId!==id);
-  if(toRemove) cloudDeleteParty(id);
-  removedPayments.forEach(p => cloudDeletePayment(p.id));
+  if(toRemove) cloudArrayRemove('parties', toRemove);
+  removedPayments.forEach(p => cloudArrayRemove('payments', p));
   saveLocal();
   showView('parties');
   showToast('Party hata di gayi');
@@ -1475,7 +1465,7 @@ function deleteParty(id){
 function addPayment(partyId, payment){
   const rec = Object.assign({ id:newId(), partyId }, payment);
   payments.push(rec);
-  cloudSetPayment(rec);
+  cloudArrayAdd('payments', rec);
   saveLocal();
   renderAll();
   return rec;
@@ -1485,15 +1475,199 @@ function deletePayment(paymentId){
   if(!rec) return;
   if(!confirmZeroDelete('Ye payment entry ('+fmtMoney(rec.amount)+') delete karna chahte hain?')) return;
   payments = payments.filter(p=>p.id!==paymentId);
-  cloudDeletePayment(paymentId);
+  if(rec) cloudArrayRemove('payments', rec);
   saveLocal();
   renderPartyDetail(currentPartyId);
   renderDashboard();
 }
 
+/* ===================== STOCK / INVENTORY ===================== */
+function openAddStockModal(){
+  document.getElementById('stkName').value='';
+  document.getElementById('stkQty').value=0;
+  document.getElementById('stkUnit').value='pcs';
+  document.getElementById('stkCost').value=0;
+  document.getElementById('stkSale').value=0;
+  document.getElementById('stkLow').value=5;
+  document.getElementById('addStockModal').style.display='flex';
+}
+function closeAddStockModal(){ document.getElementById('addStockModal').style.display='none'; }
+function submitAddStock(){
+  const name = document.getElementById('stkName').value.trim();
+  if(!name){ showToast('Item ka naam likhein', 'error'); return; }
+  const rec = {
+    id:newId(), name,
+    qty: Number(document.getElementById('stkQty').value)||0,
+    unit: document.getElementById('stkUnit').value.trim() || 'pcs',
+    costPrice: Number(document.getElementById('stkCost').value)||0,
+    salePrice: Number(document.getElementById('stkSale').value)||0,
+    lowStockAt: Number(document.getElementById('stkLow').value)||0
+  };
+  stock.push(rec);
+  cloudArrayAdd('stock', rec);
+  saveLocal();
+  closeAddStockModal();
+  renderStockList();
+  showToast('Stock item add ho gaya');
+}
+function adjustStockQty(id, delta){
+  const item = stock.find(s=>s.id===id);
+  if(!item) return;
+  item.qty = Math.max(0, (Number(item.qty)||0) + delta);
+  if(BIZ_DOC) BIZ_DOC.set({ stock }, { merge:true }).catch(()=>{});
+  saveLocal();
+  renderStockList();
+}
+function deleteStockItem(id){
+  const item = stock.find(s=>s.id===id);
+  if(!confirm('Ye stock item delete karna hai?')) return;
+  stock = stock.filter(s=>s.id!==id);
+  if(item) cloudArrayRemove('stock', item);
+  saveLocal();
+  renderStockList();
+}
+function renderStockList(){
+  const body = document.getElementById('stockListBody');
+  if(!body) return;
+  const q = (document.getElementById('stockSearch')?.value || '').toLowerCase();
+  const items = stock.filter(s=>!q || s.name.toLowerCase().includes(q));
+  const low = stock.filter(s=>Number(s.qty) <= Number(s.lowStockAt||0));
+  const lowCard = document.getElementById('lowStockCard');
+  const lowList = document.getElementById('lowStockList');
+  if(low.length){
+    lowCard.style.display='block';
+    lowList.innerHTML = low.map(s=>`${s.name} — sirf ${s.qty} ${s.unit} bacha hai`).join('<br>');
+  } else { lowCard.style.display='none'; }
+  if(!items.length){ body.innerHTML = '<div class="empty">Koi stock item nahi — + Item se shuru karein</div>'; return; }
+  body.innerHTML = items.map(s=>{
+    const isLow = Number(s.qty) <= Number(s.lowStockAt||0);
+    return `<div class="party-item">
+      <div class="row-between">
+        <div>
+          <div class="pname">${s.name} ${isLow?'<span class="badge due">Low</span>':''}</div>
+          <div class="pmeta mono">${s.qty} ${s.unit} · Sale: ${fmtMoney(s.salePrice)} · Cost: ${fmtMoney(s.costPrice)}</div>
+        </div>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <button class="icon-btn" onclick="event.stopPropagation(); adjustStockQty(${s.id}, -1)">➖</button>
+          <button class="icon-btn" onclick="event.stopPropagation(); adjustStockQty(${s.id}, 1)">➕</button>
+          <button class="icon-btn" onclick="event.stopPropagation(); deleteStockItem(${s.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== KHARCHA / EXPENSES ===================== */
+function openAddExpenseModal(){
+  document.getElementById('expAmount').value='';
+  document.getElementById('expNote').value='';
+  document.getElementById('expDate').value = todayStr();
+  const sel = document.getElementById('expAccount');
+  sel.innerHTML = accounts.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
+  document.getElementById('addExpenseModal').style.display='flex';
+}
+function closeAddExpenseModal(){ document.getElementById('addExpenseModal').style.display='none'; }
+function submitAddExpense(){
+  const amount = Number(document.getElementById('expAmount').value);
+  if(!amount || amount<=0){ showToast('Sahi amount likhein', 'error'); return; }
+  const rec = {
+    id:newId(),
+    category: document.getElementById('expCategory').value,
+    amount, account: document.getElementById('expAccount').value,
+    date: document.getElementById('expDate').value || todayStr(),
+    note: document.getElementById('expNote').value.trim()
+  };
+  expenses.push(rec);
+  cloudArrayAdd('expenses', rec);
+  saveLocal();
+  closeAddExpenseModal();
+  renderKharchaList();
+  renderDashboard();
+  showToast('Kharcha darj ho gaya');
+}
+function deleteExpense(id){
+  const rec = expenses.find(e=>e.id===id);
+  if(!confirm('Ye kharcha entry delete karna hai?')) return;
+  expenses = expenses.filter(e=>e.id!==id);
+  if(rec) cloudArrayRemove('expenses', rec);
+  saveLocal();
+  renderKharchaList();
+}
+function renderKharchaList(){
+  const body = document.getElementById('kharchaListBody');
+  if(!body) return;
+  const today = todayStr();
+  const month = today.slice(0,7);
+  const todayTotal = expenses.filter(e=>e.date===today).reduce((s,e)=>s+Number(e.amount||0),0);
+  const monthTotal = expenses.filter(e=>(e.date||'').slice(0,7)===month).reduce((s,e)=>s+Number(e.amount||0),0);
+  const elT = document.getElementById('statTodayExpense'); if(elT) elT.textContent = fmtMoney(todayTotal);
+  const elM = document.getElementById('statMonthExpense'); if(elM) elM.textContent = fmtMoney(monthTotal);
+  const sorted = [...expenses].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sorted.length){ body.innerHTML = '<div class="empty">Koi kharcha darj nahi — + Kharcha se shuru karein</div>'; return; }
+  body.innerHTML = sorted.map(e=>`<div class="party-item">
+      <div class="row-between">
+        <div>
+          <div class="pname">${e.category} <span class="mono" style="color:var(--brick);">- ${fmtMoney(e.amount)}</span></div>
+          <div class="pmeta">${fmtDate(e.date)} · ${e.account}${e.note?' · '+e.note:''}</div>
+        </div>
+        <button class="icon-btn" onclick="deleteExpense(${e.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+function downloadExpenseCSV(){
+  const rows = expenses.map(e=>({ Date:e.date, Category:e.category, Amount:e.amount, Account:e.account, Note:e.note||'' }));
+  exportCSV(rows, 'kharcha-'+todayStr()+'.csv', ['Date','Category','Amount','Account','Note']);
+}
+
+/* ===================== ACCOUNTS (Cash / Bank / Wallets) ===================== */
+function accountBalance(name){
+  const acc = accounts.find(a=>a.name===name);
+  const opening = acc ? Number(acc.opening||0) : 0;
+  const inflow = payments.filter(p=>p.method===name).reduce((s,p)=>s+Number(p.amount||0),0);
+  const outflow = expenses.filter(e=>e.account===name).reduce((s,e)=>s+Number(e.amount||0),0);
+  const adj = adjustments.filter(a=>a.account===name).reduce((s,a)=>s+Number(a.amount||0),0);
+  return opening + inflow - outflow + adj;
+}
+function openAdjustAccountModal(){
+  const sel = document.getElementById('adjAccount');
+  sel.innerHTML = accounts.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
+  document.getElementById('adjAmount').value='';
+  document.getElementById('adjNote').value='';
+  document.getElementById('adjustAccountModal').style.display='flex';
+}
+function closeAdjustAccountModal(){ document.getElementById('adjustAccountModal').style.display='none'; }
+function submitAdjustAccount(){
+  const amount = Number(document.getElementById('adjAmount').value);
+  if(!amount){ showToast('Amount likhein (+ ya -)', 'error'); return; }
+  const rec = {
+    id:newId(), account: document.getElementById('adjAccount').value,
+    amount, note: document.getElementById('adjNote').value.trim(), date: todayStr()
+  };
+  adjustments.push(rec);
+  cloudArrayAdd('adjustments', rec);
+  saveLocal();
+  closeAdjustAccountModal();
+  renderAccountsList();
+  showToast('Account adjust ho gaya');
+}
+function renderAccountsList(){
+  const body = document.getElementById('accountsListBody');
+  if(!body) return;
+  ensureDefaultAccounts();
+  body.innerHTML = accounts.map(a=>{
+    const bal = accountBalance(a.name);
+    return `<div class="party-item">
+      <div class="row-between">
+        <div class="pname">${a.name}</div>
+        <div class="stat-value mono" style="font-size:15px; color:${bal<0?'var(--brick)':'var(--teal)'};">${fmtMoney(bal)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 /* ===================== BACKUP / EXPORT ===================== */
 function exportJSON(){
-  const blob = new Blob([JSON.stringify({parties,payments}, null, 2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify({parties,payments,stock,expenses,accounts,adjustments}, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'guli-shop-backup-' + todayStr() + '.json';
@@ -1503,9 +1677,10 @@ function exportJSON(){
 }
 function emailBackupJSON(){
   const filename = 'guli-shop-backup-' + todayStr() + '.json';
-  const jsonText = JSON.stringify({parties,payments}, null, 2);
+  const jsonText = JSON.stringify({parties,payments,stock,expenses,accounts,adjustments}, null, 2);
   const blob = new Blob([jsonText], {type:'application/json'});
-  const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments (' + todayStr() + ')';
+  const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments, ' + stock.length + ' stock items, ' + expenses.length + ' kharcha entries (' + todayStr() + ')';
+  markBackupDoneToday();
 
   // Reliable fallback: browsers can't attach a file to a mailto: link, so
   // download the backup file first, then open the phone's email app with
@@ -1518,7 +1693,7 @@ function emailBackupJSON(){
     URL.revokeObjectURL(url);
     const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
     const body = encodeURIComponent(shareText + '\n\nBackup file "' + filename + '" download ho chuki hai — is email mein attach kar dein.');
-    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    window.location.href = 'mailto:' + BACKUP_EMAIL + '?subject=' + subject + '&body=' + body;
     showToast('Backup download ho gayi — email mein attach kar dein');
   }
 
@@ -1551,8 +1726,11 @@ function importJSON(file){
       const parsed = JSON.parse(e.target.result);
       if(!parsed.parties || !parsed.payments) throw new Error('bad shape');
       parties = parsed.parties; payments = parsed.payments;
+      stock = parsed.stock || []; expenses = parsed.expenses || [];
+      accounts = parsed.accounts || []; adjustments = parsed.adjustments || [];
+      ensureDefaultAccounts();
       saveLocal();
-      restoreToCloud(parties, payments);
+      if(BIZ_DOC) BIZ_DOC.set({ parties, payments, stock, expenses, accounts, adjustments }, { merge:true }).catch(()=>{});
       renderAll();
       showToast('Backup restore ho gaya');
     }catch(err){
@@ -1654,16 +1832,21 @@ function downloadPartyPDF(partyId){
 }
 
 /* ===================== VIEW SWITCHING ===================== */
+const MORE_SUBVIEWS = ['more','accounts','calculator','cards','backup'];
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
-  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  const navName = MORE_SUBVIEWS.includes(name) ? 'more' : name;
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('active', b.dataset.tab===navName));
   if(name==='dashboard') renderDashboard();
   if(name==='parties') renderPartiesList();
   if(name==='reports') renderReports();
   if(name==='backup') renderBackup();
   if(name==='cards'){ renderVisitCard(); renderGreeting(); }
   if(name==='calculator'){ qistCalc(); }
+  if(name==='stock') renderStockList();
+  if(name==='kharcha') renderKharchaList();
+  if(name==='accounts') renderAccountsList();
 }
 
 /* ===================== QIST CALCULATOR (Markup-based) ===================== */
@@ -1773,6 +1956,9 @@ function openAddPartyModal(){
   document.getElementById('npCount').value = '6';
   document.getElementById('npFrequency').value = 'Monthly';
   document.getElementById('npStart').value = todayStr();
+  document.getElementById('npGst').value = '0';
+  const stkSel = document.getElementById('npStockItem');
+  if(stkSel) stkSel.innerHTML = '<option value="">— Link nahi karna —</option>' + stock.map(s=>`<option value="${s.id}">${s.name} (${s.qty} ${s.unit} bacha hai)</option>`).join('');
   document.querySelectorAll('#npTypeRow .method-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
   npCalc();
   document.getElementById('addPartyModal').style.display = 'flex';
@@ -1795,6 +1981,9 @@ function openEditPartyModal(id){
   document.getElementById('npCount').value = party.installmentCount || fallbackCount;
   document.getElementById('npFrequency').value = party.frequency || 'Monthly';
   document.getElementById('npStart').value = party.startDate || todayStr();
+  document.getElementById('npGst').value = party.gstPercent || 0;
+  const stkSelE = document.getElementById('npStockItem');
+  if(stkSelE) stkSelE.innerHTML = '<option value="">— Link nahi karna —</option>' + stock.map(s=>`<option value="${s.id}">${s.name} (${s.qty} ${s.unit} bacha hai)</option>`).join('');
   document.querySelectorAll('#npTypeRow .method-btn').forEach(b=>b.classList.toggle('active', b.dataset.t === (party.partyType||'receivable')));
   npCalc();
   document.getElementById('addPartyModal').style.display = 'flex';
@@ -1818,6 +2007,7 @@ function submitAddParty(){
       item: document.getElementById('npItem').value.trim(),
       price: Number(price),
       markupPercent,
+      gstPercent: Number(document.getElementById('npGst').value||0),
       installmentCount,
       totalAmount: calc.totalAmount,
       advancePaid: Number(document.getElementById('npAdvance').value||0),
@@ -1839,6 +2029,7 @@ function submitAddParty(){
     item: document.getElementById('npItem').value.trim(),
     price: Number(price),
     markupPercent,
+    gstPercent: Number(document.getElementById('npGst').value||0),
     installmentCount,
     totalAmount: calc.totalAmount,
     advancePaid: Number(document.getElementById('npAdvance').value||0),
@@ -1847,6 +2038,17 @@ function submitAddParty(){
     startDate: document.getElementById('npStart').value || todayStr()
   };
   addPartyRecord(party);
+  const linkedStockId = Number(document.getElementById('npStockItem')?.value || 0);
+  if(linkedStockId){
+    const item = stock.find(s=>s.id===linkedStockId);
+    if(item){
+      item.qty = Math.max(0, (Number(item.qty)||0) - 1);
+      if(BIZ_DOC) BIZ_DOC.set({ stock }, { merge:true }).catch(()=>{});
+      saveLocal();
+      renderStockList();
+      if(item.qty <= Number(item.lowStockAt||0)) showToast(item.name + ' ka stock kam ho gaya hai (' + item.qty + ' ' + item.unit + ' bacha)', 'error');
+    }
+  }
   closeAddPartyModal();
   showToast('Party judd di gayi — invoice JPG taiyar ho rahi hai');
   // Party add hote hi uska invoice bill turant JPG ki soorat mein
@@ -1878,11 +2080,6 @@ function renderDashboard(){
   document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollected));
   document.getElementById('statActive').textContent = t.activeParties;
   document.getElementById('statPayable').textContent = maskMoney(fmtMoney(t.totalPayableOutstanding));
-  document.getElementById('statActiveNote').textContent = t.activeParties + (t.activeParties===1 ? ' chalu party' : ' chalu parties');
-
-  const cycleTotal = t.totalCollected + t.totalOutstanding;
-  const collectedPct = cycleTotal>0 ? Math.round((t.totalCollected/cycleTotal)*100) : 0;
-  document.getElementById('dashHeroBarFill').style.width = collectedPct + '%';
 
   const recent = [...payments].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const box = document.getElementById('recentPayments');
@@ -1891,12 +2088,10 @@ function renderDashboard(){
   } else {
     box.innerHTML = recent.map(p=>{
       const party = parties.find(x=>x.id===p.partyId);
-      const initial = (party?.name || '?').trim().charAt(0).toUpperCase();
-      return `<div class="dash-recent-item" onclick="openParty(${p.partyId})">
-        <div class="dash-avatar">${initial}</div>
-        <div class="dash-recent-info">
-          <div class="dash-recent-name">${party?.name || 'Unknown'}</div>
-          <div class="dash-recent-meta">${fmtDate(p.date)} · ${p.method}</div>
+      return `<div class="card row-between" style="cursor:pointer; border-style:dashed;" onclick="openParty(${p.partyId})">
+        <div>
+          <div style="font-weight:600; font-size:13px;">${party?.name || 'Unknown'}</div>
+          <div style="font-size:11px; opacity:.6;">${fmtDate(p.date)} · ${p.method}</div>
         </div>
         <div class="mono" style="color:var(--teal); font-weight:700; font-size:13px;">${maskMoney('+' + fmtMoney(p.amount))}</div>
       </div>`;
@@ -2106,12 +2301,48 @@ function renderReports(){
       return `<div class="ledger-row"><span>${p.name}</span><span class="mono" style="font-weight:700; color:${paid?'var(--teal)':'var(--brick)'};">${paid?'Paid':fmtMoney(b.balance)}</span></div>`;
     }).join('');
   }
+
+  renderWeekBarChart();
+}
+function renderWeekBarChart(){
+  const chart = document.getElementById('weekBarChart');
+  const labels = document.getElementById('weekBarLabels');
+  if(!chart) return;
+  const days = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  const dayIncome = days.map(d=>payments.filter(p=>p.date===d).reduce((s,p)=>s+Number(p.amount||0),0));
+  const dayExpense = days.map(d=>expenses.filter(e=>e.date===d).reduce((s,e)=>s+Number(e.amount||0),0));
+  const weekIncomeTotal = dayIncome.reduce((a,b)=>a+b,0);
+  const weekExpenseTotal = dayExpense.reduce((a,b)=>a+b,0);
+  const elI = document.getElementById('statWeekIncome'); if(elI) elI.textContent = fmtMoney(weekIncomeTotal);
+  const elE = document.getElementById('statWeekExpense'); if(elE) elE.textContent = fmtMoney(weekExpenseTotal);
+  const maxVal = Math.max(1, ...dayIncome, ...dayExpense);
+  chart.innerHTML = days.map((d,i)=>{
+    const hIn = Math.max(2, Math.round(dayIncome[i]/maxVal*100));
+    const hEx = Math.max(2, Math.round(dayExpense[i]/maxVal*100));
+    return `<div style="flex:1; display:flex; gap:2px; align-items:flex-end; height:100px;">
+      <div style="flex:1; height:${hIn}px; background:var(--teal); border-radius:3px 3px 0 0;" title="Wasooli: ${fmtMoney(dayIncome[i])}"></div>
+      <div style="flex:1; height:${hEx}px; background:var(--brick); border-radius:3px 3px 0 0;" title="Kharcha: ${fmtMoney(dayExpense[i])}"></div>
+    </div>`;
+  }).join('');
+  labels.innerHTML = days.map(d=>`<div style="flex:1;">${d.slice(5)}</div>`).join('');
 }
 
 /* ===================== RENDER: BACKUP ===================== */
 function renderBackup(){
-  document.getElementById('dataCounts').textContent = parties.length + ' parties · ' + payments.length + ' payments';
-  updateCloudStatusText();
+  document.getElementById('dataCounts').textContent = parties.length + ' parties · ' + payments.length + ' payments · ' + stock.length + ' stock · ' + expenses.length + ' kharcha';
+  if(!BIZ_DOC){
+    document.getElementById('cloudStatus').textContent = 'Firebase config set nahi — sirf is device par data';
+  }
+  const info = document.getElementById('lastBackupInfo');
+  if(info){
+    let last = null;
+    try{ last = localStorage.getItem(BACKUP_DONE_KEY); }catch(e){}
+    info.textContent = last ? ('Aakhri backup: ' + fmtDate(last)) : 'Abhi tak koi email backup nahi hua';
+  }
 }
 
 /* ===================== INIT ===================== */
@@ -2121,11 +2352,41 @@ function renderAll(){
   if(currentPartyId) renderPartyDetail(currentPartyId);
   renderReports();
   renderBackup();
+  renderStockList();
+  renderKharchaList();
+  renderAccountsList();
 }
+/* ===================== DAILY BACKUP REMINDER ===================== */
+const BACKUP_REMIND_KEY = 'guli_shop_last_backup_reminder';
+const BACKUP_DONE_KEY = 'guli_shop_last_backup_done';
 loadLocal();
 document.getElementById('reportDate').value = todayStr();
 renderAll();
 checkDueReminders(); // sirf tab notify karta hai jab permission pehle se granted ho — koi extra popup nahi
+
+function markBackupDoneToday(){
+  try{ localStorage.setItem(BACKUP_DONE_KEY, todayStr()); }catch(e){}
+  const el = document.getElementById('lastBackupInfo');
+  if(el) el.textContent = 'Aakhri backup: ' + fmtDate(todayStr());
+}
+function checkDailyBackupReminder(){
+  try{
+    const lastShown = localStorage.getItem(BACKUP_REMIND_KEY);
+    if(lastShown === todayStr()) return; // aaj already dikha chuke
+    if(!parties.length && !payments.length) return; // koi data hi nahi to reminder ki zaroorat nahi
+    localStorage.setItem(BACKUP_REMIND_KEY, todayStr());
+    const modal = document.getElementById('backupReminderModal');
+    if(modal) modal.style.display = 'flex';
+  }catch(e){}
+}
+function closeBackupReminder(){
+  const modal = document.getElementById('backupReminderModal');
+  if(modal) modal.style.display = 'none';
+}
+function backupReminderSend(){
+  emailBackupJSON();
+  closeBackupReminder();
+}
 </script>
 
 <script>
@@ -2417,6 +2678,7 @@ function completeUnlock(){
   document.getElementById('loginScreen').classList.add('hidden');
   try{ sessionStorage.setItem(SESSION_UNLOCK_KEY, '1'); }catch(e){}
   resetInactivityTimer();
+  setTimeout(checkDailyBackupReminder, 600);
 }
 
 function lockApp(){
