@@ -68,6 +68,31 @@
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .stat-label{font-size:10px; text-transform:uppercase; letter-spacing:.05em; opacity:.6;}
   .stat-value{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; margin-top:6px;}
+
+  /* ---- Modern dashboard ---- */
+  .dash-hero{position:relative; overflow:hidden; border-radius:22px; padding:20px 18px; margin-bottom:16px; background:linear-gradient(135deg, #0e5c4c 0%, #12735f 55%, #0a3b30 100%); color:#fff; box-shadow:0 10px 26px rgba(14,92,76,.28);}
+  .dash-hero::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 90% -10%, rgba(255,255,255,.18), transparent 55%); pointer-events:none;}
+  .dash-hero::after{content:''; position:absolute; right:-30px; bottom:-40px; width:140px; height:140px; border-radius:50%; background:radial-gradient(circle, rgba(199,154,62,.35), transparent 70%); pointer-events:none;}
+  .dash-hero-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; position:relative; z-index:1;}
+  .dash-hero-label{font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.75; font-weight:600;}
+  .dash-hero-amount{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:30px; margin-top:4px; line-height:1.1;}
+  .dash-eye-btn{background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); color:#fff; border-radius:12px; width:38px; height:38px; font-size:16px; cursor:pointer; flex-shrink:0; backdrop-filter:blur(2px);}
+  .dash-sync-pill{display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); padding:5px 10px; border-radius:999px; margin-top:14px; position:relative; z-index:1;}
+  .dash-sync-dot{width:6px; height:6px; border-radius:50%; background:#7CE0BE; box-shadow:0 0 0 3px rgba(124,224,190,.25);}
+  .dash-sync-pill.offline .dash-sync-dot{background:#E0B96A; box-shadow:0 0 0 3px rgba(224,185,106,.25);}
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px;}
+  .stat-card{position:relative; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px 14px 13px; overflow:hidden; box-shadow:0 3px 10px rgba(28,43,36,.05); transition:transform .12s ease;}
+  .stat-card:active{transform:scale(.98);}
+  .stat-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--sc-accent, var(--teal));}
+  .stat-card .stat-icon{font-size:16px; opacity:.85; margin-bottom:8px; display:block;}
+  .stat-card .stat-label{margin-bottom:0;}
+  .stat-card .stat-value{font-size:18px; margin-top:5px;}
+  .stat-card.wide{grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between;}
+  .stat-card.wide .stat-icon{margin-bottom:0;}
+  .recent-item{display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:11px 12px; margin-bottom:8px; cursor:pointer; box-shadow:0 2px 6px rgba(28,43,36,.04);}
+  .recent-avatar{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--teal), #0a3b30); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0;}
+  .section-title-row{display:flex; align-items:center; justify-content:space-between; margin:18px 0 8px;}
+  .section-title-row .section-title{margin:0;}
   .section-title{font-size:13px; font-weight:600; opacity:.8; margin:18px 0 8px;}
   .empty{border:1px dashed var(--line); border-radius:12px; padding:22px; text-align:center; font-size:13px; opacity:.6;}
   input,select{width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; font-size:14px; background:#fff; font-family:inherit; outline:none;}
@@ -256,18 +281,28 @@
 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
-      <div class="row-between" style="margin-bottom:8px;">
-        <span style="font-size:12px; opacity:.6; font-weight:600;">Balance dikhayein ya chupayein</span>
-        <button id="balanceToggleBtn" onclick="toggleBalanceVisibility()" title="Balance chupayein/dikhayein" style="background:none; border:1px solid var(--line); border-radius:10px; width:38px; height:34px; font-size:16px; cursor:pointer;">👁</button>
+      <div class="dash-hero" onclick="toggleBalanceVisibility()">
+        <div class="dash-hero-top">
+          <div>
+            <div class="dash-hero-label">Aaj Wasooli</div>
+            <div class="dash-hero-amount mono" id="statToday">Rs. 0</div>
+          </div>
+          <button id="balanceToggleBtn" onclick="event.stopPropagation(); toggleBalanceVisibility()" title="Balance chupayein/dikhayein" class="dash-eye-btn">👁</button>
+        </div>
+        <div class="dash-sync-pill" id="dashSyncPill"><span class="dash-sync-dot"></span><span id="dashSyncText">Sync ho raha hai…</span></div>
       </div>
-      <div class="grid2">
-        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Aaj Wasooli</div><div class="stat-value mono" id="statToday">Rs. 0</div></div>
-        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
-        <div class="card" onclick="toggleBalanceVisibility()" style="cursor:pointer;"><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
-        <div class="card"><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
-        <div class="card" onclick="toggleBalanceVisibility()" style="grid-column:1 / -1; cursor:pointer;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
+      <div class="stat-grid">
+        <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--brick);"><span class="stat-icon">📌</span><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
+        <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--gold);"><span class="stat-icon">💰</span><div class="stat-label">Ab Tak Wasool</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
+        <div class="stat-card" style="--sc-accent:var(--teal);"><span class="stat-icon">👥</span><div class="stat-label">Chalu Parties</div><div class="stat-value mono" id="statActive">0</div></div>
+        <div class="stat-card wide" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--teal);">
+          <div><span class="stat-icon">🤝</span></div>
+          <div style="flex:1; margin-left:8px;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
+        </div>
       </div>
-      <div class="section-title">Recent Payments</div>
+      <div class="section-title-row">
+        <div class="section-title" style="margin:0;">Recent Payments</div>
+      </div>
       <div id="recentPayments"></div>
     </div>
 
@@ -681,7 +716,12 @@ function ensureDefaultAccounts(){
   const names = ['Cash','EasyPaisa','JazzCash','Bank'];
   names.forEach(n=>{
     if(!accounts.find(a=>a.name===n)){
-      accounts.push({ id:newId(), name:n, opening:0 });
+      // Fixed (not random) id, so every device converges on the SAME cloud
+      // document for each default account instead of each device creating
+      // its own duplicate "Cash"/"Bank"/etc. record.
+      const rec = { id:'acct_'+n.toLowerCase(), name:n, opening:0 };
+      accounts.push(rec);
+      if(typeof cloudSet === 'function') cloudSet('accounts', rec);
     }
   });
 }
@@ -720,15 +760,174 @@ function loadLocal(){
 function saveLocal(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({ parties, payments, stock, expenses, accounts, adjustments })); }catch(e){}
 }
-function cloudArrayAdd(field, item){
-  if(!BIZ_DOC) return;
-  BIZ_DOC.set({ [field]: firebase.firestore.FieldValue.arrayUnion(item) }, { merge:true })
-    .catch(err => console.warn('Cloud add failed:', err));
+
+/* ============================================================
+   CLOUD STORAGE MODEL — ONE DOCUMENT PER RECORD
+   ------------------------------------------------------------
+   Purani design mein saara data (sab parties, sab payments...)
+   EK hi Firestore document ("business/main") ke andar arrays
+   ki soorat mein store hota tha, aur har save par poora array
+   dobara likha jata tha. Is se 2 masle aate hain:
+     1) Firestore ka har document sirf 1MB tak store kar sakta
+        hai — data barhne par ye limit hit ho sakti hai.
+     2) "Remove" sirf ek-dum EXACT (hoo-ba-hoo) object match par
+        kaam karta tha — agar object thora sa bhi mismatch ho
+        (field order, undefined, etc.) to purana record delete
+        nahi hota aur duplicate reh jata hai.
+
+   Naya design: har record (party, payment, stock item...) apna
+   ALAG chota sa Firestore document hai, apni khud ki ID ke sath:
+     business/main/parties/{id}
+     business/main/payments/{id}
+     business/main/stock/{id}
+     business/main/expenses/{id}
+     business/main/accounts/{id}
+     business/main/adjustments/{id}
+   Isi ID par dobara "set" karne se woh document sirf UPDATE hota
+   hai (kabhi duplicate nahi banta), aur "delete" seedha usi ek
+   document ko hata deta hai — koi array-matching zaroori nahi.
+   Har document chota (kuch sau bytes) rehta hai, is liye 1MB
+   limit kabhi hit nahi hoti chahe hazaron records ho jayein.
+   ============================================================ */
+const CLOUD_COLLECTIONS = ['parties','payments','stock','expenses','accounts','adjustments'];
+/* In-memory references to the live arrays, so the sync engine below can
+   read/mutate them without re-declaring the variables. */
+const LOCAL_STATE = { parties: ()=>parties, payments: ()=>payments, stock: ()=>stock, expenses: ()=>expenses, accounts: ()=>accounts, adjustments: ()=>adjustments };
+
+function subCol(name){ return BIZ_DOC ? BIZ_DOC.collection(name) : null; }
+
+/* Create OR update a single record's own document — never touches any
+   other record, so it can never duplicate or overwrite someone else's data. */
+function cloudSet(colName, item){
+  const col = subCol(colName);
+  if(!col || item == null || item.id == null) return;
+  col.doc(String(item.id)).set(item)
+    .catch(err => console.warn('Cloud save failed ('+colName+'):', err));
 }
-function cloudArrayRemove(field, item){
+/* Delete a single record's document by id. */
+function cloudDeleteById(colName, id){
+  const col = subCol(colName);
+  if(!col || id == null) return;
+  col.doc(String(id)).delete()
+    .catch(err => console.warn('Cloud delete failed ('+colName+'):', err));
+}
+
+/* Push every record from every local array up as its own cloud document —
+   used after restoring a JSON backup, so the restored data reaches the
+   same one-document-per-record collections (batched, chunked at 450). */
+function cloudBulkWriteAll(){
   if(!BIZ_DOC) return;
-  BIZ_DOC.set({ [field]: firebase.firestore.FieldValue.arrayRemove(item) }, { merge:true })
-    .catch(err => console.warn('Cloud remove failed:', err));
+  const writes = [];
+  CLOUD_COLLECTIONS.forEach(colName=>{
+    (LOCAL_STATE[colName]() || []).forEach(item=>{
+      if(item && item.id != null) writes.push({ colName, item });
+    });
+  });
+  const chunks = [];
+  for(let i=0;i<writes.length;i+=450) chunks.push(writes.slice(i,i+450));
+  let chain = Promise.resolve();
+  chunks.forEach(chunk=>{
+    chain = chain.then(()=>{
+      const batch = db.batch();
+      chunk.forEach(({colName,item})=>{
+        batch.set(subCol(colName).doc(String(item.id)), item);
+      });
+      return batch.commit();
+    });
+  });
+  chain.catch(err=>console.warn('Bulk restore to cloud failed:', err));
+}
+
+/* ---- One-time migration: move any OLD-style data (arrays sitting
+   directly on business/main) into the new per-record subcollections,
+   then clear those old array fields so the main document stays tiny
+   forever. This is what pulls in "purana" (old) cloud data. ---- */
+function migrateLegacyDocIfNeeded(){
+  if(!BIZ_DOC) return Promise.resolve();
+  return BIZ_DOC.get().then(snap=>{
+    if(!snap.exists) return;
+    const data = snap.data() || {};
+    if(data.__migratedToSubcollections) return;
+    const writes = [];
+    CLOUD_COLLECTIONS.forEach(colName=>{
+      const arr = Array.isArray(data[colName]) ? data[colName] : [];
+      arr.forEach(item=>{
+        if(item && item.id != null) writes.push({ colName, item });
+      });
+    });
+    if(!writes.length){
+      return BIZ_DOC.set({ __migratedToSubcollections:true }, { merge:true });
+    }
+    // Firestore batches max out at 500 writes — chunk it to be safe.
+    const chunks = [];
+    for(let i=0;i<writes.length;i+=450) chunks.push(writes.slice(i,i+450));
+    let chain = Promise.resolve();
+    chunks.forEach(chunk=>{
+      chain = chain.then(()=>{
+        const batch = db.batch();
+        chunk.forEach(({colName,item})=>{
+          batch.set(subCol(colName).doc(String(item.id)), item);
+        });
+        return batch.commit();
+      });
+    });
+    const clearOld = {};
+    CLOUD_COLLECTIONS.forEach(c=>{ clearOld[c] = firebase.firestore.FieldValue.delete(); });
+    clearOld.__migratedToSubcollections = true;
+    return chain.then(()=>BIZ_DOC.set(clearOld, { merge:true }));
+  }).catch(err=>console.warn('Legacy data migration failed:', err));
+}
+
+/* ---- Real-time listeners: one per subcollection. Each listener keeps
+   the matching local array perfectly in sync — including automatically
+   picking up changes made from another device/tab, live. ---- */
+const cloudSyncState = {}; // colName -> { loaded:bool, fromCache:bool }
+function updateCloudStatusText(){
+  const status = document.getElementById('cloudStatus');
+  const dashPill = document.getElementById('dashSyncPill');
+  const dashText = document.getElementById('dashSyncText');
+  const states = CLOUD_COLLECTIONS.map(c=>cloudSyncState[c]).filter(Boolean);
+  let full, mini, offline;
+  if(states.length < CLOUD_COLLECTIONS.length){
+    full = '🔄 Cloud se data sync ho raha hai…'; mini = 'Sync ho raha hai…'; offline = false;
+  } else {
+    offline = states.some(s=>s.fromCache);
+    full = offline ? '📡 Offline cache — internet aane par sync hoga' : '☁️ Live — cloud se realtime sync ho raha hai';
+    mini = offline ? 'Offline — internet aane par sync hoga' : 'Live sync — cloud se jurha hai';
+  }
+  if(status) status.textContent = full;
+  if(dashText) dashText.textContent = mini;
+  if(dashPill) dashPill.classList.toggle('offline', !!offline);
+}
+function startCollectionSync(colName){
+  const col = subCol(colName);
+  if(!col) return;
+  col.onSnapshot({ includeMetadataChanges:true }, snapshot=>{
+    const arr = LOCAL_STATE[colName]();
+    snapshot.docChanges().forEach(change=>{
+      const idStr = change.doc.id;
+      const idx = arr.findIndex(x => String(x.id) === idStr);
+      if(change.type === 'removed'){
+        if(idx > -1) arr.splice(idx,1);
+      } else {
+        const data = change.doc.data();
+        if(idx > -1) arr[idx] = data; else arr.push(data);
+      }
+    });
+    if(colName === 'accounts') ensureDefaultAccounts();
+    cloudSyncState[colName] = { loaded:true, fromCache: snapshot.metadata.fromCache };
+    updateCloudStatusText();
+    saveLocal();
+    renderAll();
+  }, err=>{
+    console.warn('Cloud listen failed ('+colName+'):', err);
+    // Show the real Firebase error code so the problem can actually be diagnosed
+    // (common causes: Firestore Security Rules blocking the request, Email/Password
+    // sign-in not enabled in Firebase Console > Authentication, or this domain not
+    // listed under Authentication > Settings > Authorized domains).
+    const status = document.getElementById('cloudStatus');
+    if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
+  });
 }
 
 let cloudSyncStarted = false;
@@ -736,31 +935,17 @@ function startCloudSync(){
   if(cloudSyncStarted) return;
   cloudSyncStarted = true;
   if(BIZ_DOC){
-    BIZ_DOC.onSnapshot({ includeMetadataChanges:true }, function(doc){
-      if(doc.exists){
-        applyData(doc.data());
-        saveLocal();
-        renderAll();
-      }
-      const status = document.getElementById('cloudStatus');
-      if(status){
-        status.textContent = doc.metadata.fromCache
-          ? '📡 Offline cache — internet aane par sync hoga'
-          : '☁️ Live — cloud se realtime sync ho raha hai';
-      }
-    }, function(err){
-      console.warn('Cloud listen failed:', err);
-      const status = document.getElementById('cloudStatus');
-      // Show the real Firebase error code so the problem can actually be diagnosed
-      // (common causes: Firestore Security Rules blocking the request, Email/Password
-      // sign-in not enabled in Firebase Console > Authentication, or this domain not
-      // listed under Authentication > Settings > Authorized domains).
-      if(status) status.textContent = '⚠️ Cloud connect nahi ho saka (' + (err.code||err.message||'unknown') + ') — sirf local data';
+    migrateLegacyDocIfNeeded().then(()=>{
+      CLOUD_COLLECTIONS.forEach(startCollectionSync);
     });
   } else {
     document.addEventListener('DOMContentLoaded', ()=>{
       const status = document.getElementById('cloudStatus');
+      const dashPill = document.getElementById('dashSyncPill');
+      const dashText = document.getElementById('dashSyncText');
       if(status) status.textContent = 'Firebase config set nahi — sirf is device par data (Settings mein config dalein)';
+      if(dashText) dashText.textContent = 'Sirf is device par data';
+      if(dashPill) dashPill.classList.add('offline');
     });
   }
 }
@@ -1425,7 +1610,7 @@ function shareInvoiceImage(partyId){
 /* ===================== CRUD ===================== */
 function addPartyRecord(party){
   parties.push(party);
-  cloudArrayAdd('parties', party);
+  cloudSet('parties', party);
   saveLocal();
   renderAll();
 }
@@ -1433,9 +1618,8 @@ function updatePartyRecord(oldParty, newParty){
   const idx = parties.findIndex(p => p.id === oldParty.id);
   if(idx === -1) return;
   parties[idx] = newParty;
-  // Firestore arrays don't support "update in place" — remove the old object, add the new one.
-  cloudArrayRemove('parties', oldParty);
-  cloudArrayAdd('parties', newParty);
+  // Same document id gets overwritten in place — never creates a duplicate.
+  cloudSet('parties', newParty);
   saveLocal();
   renderAll();
 }
@@ -1456,8 +1640,8 @@ function deleteParty(id){
   parties = parties.filter(p=>p.id!==id);
   const removedPayments = payments.filter(p=>p.partyId===id);
   payments = payments.filter(p=>p.partyId!==id);
-  if(toRemove) cloudArrayRemove('parties', toRemove);
-  removedPayments.forEach(p => cloudArrayRemove('payments', p));
+  if(toRemove) cloudDeleteById('parties', id);
+  removedPayments.forEach(p => cloudDeleteById('payments', p.id));
   saveLocal();
   showView('parties');
   showToast('Party hata di gayi');
@@ -1465,7 +1649,7 @@ function deleteParty(id){
 function addPayment(partyId, payment){
   const rec = Object.assign({ id:newId(), partyId }, payment);
   payments.push(rec);
-  cloudArrayAdd('payments', rec);
+  cloudSet('payments', rec);
   saveLocal();
   renderAll();
   return rec;
@@ -1475,7 +1659,7 @@ function deletePayment(paymentId){
   if(!rec) return;
   if(!confirmZeroDelete('Ye payment entry ('+fmtMoney(rec.amount)+') delete karna chahte hain?')) return;
   payments = payments.filter(p=>p.id!==paymentId);
-  if(rec) cloudArrayRemove('payments', rec);
+  cloudDeleteById('payments', paymentId);
   saveLocal();
   renderPartyDetail(currentPartyId);
   renderDashboard();
@@ -1504,7 +1688,7 @@ function submitAddStock(){
     lowStockAt: Number(document.getElementById('stkLow').value)||0
   };
   stock.push(rec);
-  cloudArrayAdd('stock', rec);
+  cloudSet('stock', rec);
   saveLocal();
   closeAddStockModal();
   renderStockList();
@@ -1514,7 +1698,7 @@ function adjustStockQty(id, delta){
   const item = stock.find(s=>s.id===id);
   if(!item) return;
   item.qty = Math.max(0, (Number(item.qty)||0) + delta);
-  if(BIZ_DOC) BIZ_DOC.set({ stock }, { merge:true }).catch(()=>{});
+  cloudSet('stock', item);
   saveLocal();
   renderStockList();
 }
@@ -1522,7 +1706,7 @@ function deleteStockItem(id){
   const item = stock.find(s=>s.id===id);
   if(!confirm('Ye stock item delete karna hai?')) return;
   stock = stock.filter(s=>s.id!==id);
-  if(item) cloudArrayRemove('stock', item);
+  if(item) cloudDeleteById('stock', id);
   saveLocal();
   renderStockList();
 }
@@ -1578,7 +1762,7 @@ function submitAddExpense(){
     note: document.getElementById('expNote').value.trim()
   };
   expenses.push(rec);
-  cloudArrayAdd('expenses', rec);
+  cloudSet('expenses', rec);
   saveLocal();
   closeAddExpenseModal();
   renderKharchaList();
@@ -1589,7 +1773,7 @@ function deleteExpense(id){
   const rec = expenses.find(e=>e.id===id);
   if(!confirm('Ye kharcha entry delete karna hai?')) return;
   expenses = expenses.filter(e=>e.id!==id);
-  if(rec) cloudArrayRemove('expenses', rec);
+  if(rec) cloudDeleteById('expenses', id);
   saveLocal();
   renderKharchaList();
 }
@@ -1644,7 +1828,7 @@ function submitAdjustAccount(){
     amount, note: document.getElementById('adjNote').value.trim(), date: todayStr()
   };
   adjustments.push(rec);
-  cloudArrayAdd('adjustments', rec);
+  cloudSet('adjustments', rec);
   saveLocal();
   closeAdjustAccountModal();
   renderAccountsList();
@@ -1730,7 +1914,7 @@ function importJSON(file){
       accounts = parsed.accounts || []; adjustments = parsed.adjustments || [];
       ensureDefaultAccounts();
       saveLocal();
-      if(BIZ_DOC) BIZ_DOC.set({ parties, payments, stock, expenses, accounts, adjustments }, { merge:true }).catch(()=>{});
+      cloudBulkWriteAll();
       renderAll();
       showToast('Backup restore ho gaya');
     }catch(err){
@@ -2043,7 +2227,7 @@ function submitAddParty(){
     const item = stock.find(s=>s.id===linkedStockId);
     if(item){
       item.qty = Math.max(0, (Number(item.qty)||0) - 1);
-      if(BIZ_DOC) BIZ_DOC.set({ stock }, { merge:true }).catch(()=>{});
+      cloudSet('stock', item);
       saveLocal();
       renderStockList();
       if(item.qty <= Number(item.lowStockAt||0)) showToast(item.name + ' ka stock kam ho gaya hai (' + item.qty + ' ' + item.unit + ' bacha)', 'error');
@@ -2088,12 +2272,14 @@ function renderDashboard(){
   } else {
     box.innerHTML = recent.map(p=>{
       const party = parties.find(x=>x.id===p.partyId);
-      return `<div class="card row-between" style="cursor:pointer; border-style:dashed;" onclick="openParty(${p.partyId})">
-        <div>
+      const initial = (party?.name || '?').trim().charAt(0).toUpperCase();
+      return `<div class="recent-item" onclick="openParty(${p.partyId})">
+        <div class="recent-avatar">${initial}</div>
+        <div style="flex:1; min-width:0;">
           <div style="font-weight:600; font-size:13px;">${party?.name || 'Unknown'}</div>
           <div style="font-size:11px; opacity:.6;">${fmtDate(p.date)} · ${p.method}</div>
         </div>
-        <div class="mono" style="color:var(--teal); font-weight:700; font-size:13px;">${maskMoney('+' + fmtMoney(p.amount))}</div>
+        <div class="mono" style="color:var(--teal); font-weight:700; font-size:13px; white-space:nowrap;">${maskMoney('+' + fmtMoney(p.amount))}</div>
       </div>`;
     }).join('');
   }
