@@ -91,6 +91,12 @@
   .stat-card.wide .stat-icon{margin-bottom:0;}
   .recent-item{display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:11px 12px; margin-bottom:8px; cursor:pointer; box-shadow:0 2px 6px rgba(28,43,36,.04);}
   .recent-avatar{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--teal), #0a3b30); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0;}
+  .quick-tool-card{display:flex; align-items:center; gap:12px; background:linear-gradient(135deg, #fff, var(--paper-dark)); border:1px solid var(--line); border-radius:16px; padding:13px 14px; margin-bottom:14px; cursor:pointer; box-shadow:0 3px 10px rgba(28,43,36,.05); transition:transform .1s ease;}
+  .quick-tool-card:active{transform:scale(.98);}
+  .quick-tool-card .qt-icon{width:38px; height:38px; border-radius:11px; background:#C79A3E22; color:#8a6d1f; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;}
+  .quick-tool-card .qt-title{font-weight:700; font-size:13.5px;}
+  .quick-tool-card .qt-sub{font-size:11px; opacity:.6; margin-top:2px;}
+  .quick-tool-card .qt-arrow{font-size:20px; opacity:.35;}
   .section-title-row{display:flex; align-items:center; justify-content:space-between; margin:18px 0 8px;}
   .section-title-row .section-title{margin:0;}
 
@@ -224,7 +230,7 @@
   .login-logo-ring{ width:92px; height:92px; border-radius:24px; margin:0 auto 12px; padding:4px; background:linear-gradient(135deg, var(--gold), var(--teal)); box-shadow:0 10px 24px rgba(14,92,76,.3); }
   .login-logo{ width:100%; height:100%; border-radius:20px; object-fit:cover; display:block; background:#fff; }
   .login-title{ font-family:'Fraunces',serif; font-weight:700; font-size:24px; letter-spacing:-.01em; }
-  .login-sub{ font-size:10.5px; color:var(--teal); font-weight:700; text-transform:uppercase; letter-spacing:.09em; margin-top:4px; }
+  .login-sub{ font-size:12px; color:var(--teal); font-weight:600; letter-spacing:.01em; margin-top:5px; line-height:1.4; }
   .login-divider{ width:36px; height:3px; border-radius:3px; background:linear-gradient(90deg, var(--gold), var(--teal)); margin:14px auto 18px; }
   .login-card .field{ text-align:left; }
   .login-card input{ text-align:center; letter-spacing:.12em; font-size:16px; }
@@ -255,7 +261,7 @@
   <div class="login-card">
     <div class="login-logo-ring"><img class="login-logo" id="loginLogo" alt="Guli Shop"></div>
     <div class="login-title">Guli Shop</div>
-    <div class="login-sub">Easy Shopping, Easy Installments</div>
+    <div class="login-sub">Welcome To Guli Shop and Installment</div>
     <div class="login-divider"></div>
 
     <!-- FIREBASE ACCOUNT LOGIN (shown once per device, before PIN) -->
@@ -363,6 +369,14 @@
           <div><span class="stat-icon">🤝</span></div>
           <div style="flex:1; margin-left:8px;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
         </div>
+      </div>
+      <div class="quick-tool-card" onclick="showView('calculator')">
+        <div class="qt-icon">🧮</div>
+        <div style="flex:1;">
+          <div class="qt-title">Qist Calculator</div>
+          <div class="qt-sub">Installment plan turant nikalein</div>
+        </div>
+        <div class="qt-arrow">›</div>
       </div>
       <div class="section-title-row">
         <div class="section-title" style="margin:0;">Monthly Overview</div>
@@ -515,6 +529,7 @@
 
     <!-- CALCULATOR -->
     <div class="view" id="view-calculator">
+      <button class="btn-outline btn btn-sm" style="margin-bottom:12px;" onclick="showView('dashboard')">← Wapas</button>
       <div class="card">
         <div style="font-weight:600; font-size:14px; margin-bottom:10px;">🧮 Qist Calculator</div>
         <div style="font-size:11px; opacity:.6; margin-bottom:10px;">Price aur Markup % daal kar Payment + Markup, Total Payment aur har Qist ka amount khud nikal aayega.</div>
@@ -571,7 +586,7 @@
 
     <!-- ACCOUNTS -->
     <div class="view" id="view-accounts">
-      <button class="btn-outline btn btn-sm" style="margin-bottom:12px;" onclick="showView('more')">← Wapas</button>
+      <button class="btn-outline btn btn-sm" style="margin-bottom:12px;" onclick="showView('dashboard')">← Wapas</button>
       <div class="row-between" style="margin-bottom:10px;">
         <span style="font-size:12px; opacity:.6; font-weight:600;">Cash aur Bank/Wallet accounts ka balance</span>
         <button class="btn btn-teal btn-sm" onclick="openAdjustAccountModal()">+ Adjust</button>
@@ -645,10 +660,7 @@
   <div class="inner">
     <button data-tab="dashboard" onclick="showView('dashboard')">📊<span>Dashboard</span></button>
     <button data-tab="parties" onclick="goToPartiesFilter('all')">👥<span>Parties</span></button>
-    <button data-tab="stock" onclick="showView('stock')">📦<span>Stock</span></button>
-    <button data-tab="kharcha" onclick="showView('kharcha')">💸<span>Kharcha</span></button>
-    <button data-tab="reports" onclick="showView('reports')">📄<span>Reports</span></button>
-    <button data-tab="more" onclick="showView('more')">⋯<span>More</span></button>
+    <button data-tab="more" onclick="openSidebar()">☰<span>Menu</span></button>
   </div>
 </nav>
 
@@ -2117,7 +2129,7 @@ function downloadPartyPDF(partyId){
 }
 
 /* ===================== VIEW SWITCHING ===================== */
-const MORE_SUBVIEWS = ['more','accounts','calculator','cards','backup'];
+const MORE_SUBVIEWS = ['more','accounts','calculator','cards','backup','stock','kharcha','reports'];
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
