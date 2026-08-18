@@ -363,7 +363,7 @@
       </div>
       <div class="stat-grid">
         <div class="stat-card" onclick="goToPartiesFilter('receivable')" style="--sc-accent:var(--brick);"><span class="stat-icon">📌</span><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
-        <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--gold);"><span class="stat-icon">💰</span><div class="stat-label">Ab Tak Recovery</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
+        <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--gold);"><span class="stat-icon">💰</span><div class="stat-label">Is Mahine Recovery</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
         <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--brick);"><span class="stat-icon">🏗️</span><div class="stat-label">Total Investment</div><div class="stat-value mono" id="statInvestment" style="color:var(--brick);">Rs. 0</div></div>
         <div class="stat-card" onclick="goToPartiesFilter('all')" style="--sc-accent:var(--teal);"><span class="stat-icon">👥</span><div class="stat-label">Active Parties</div><div class="stat-value mono" id="statActive">0</div></div>
         <div class="stat-card wide" onclick="goToPartiesFilter('payable')" style="--sc-accent:var(--teal);">
@@ -676,11 +676,11 @@
   </div>
 </div>
 
-<!-- DAILY BACKUP REMINDER MODAL -->
+<!-- WEEKLY OFFSITE (EMAIL) BACKUP REMINDER MODAL -->
 <div class="modal-backdrop" id="backupReminderModal" style="display:none;">
   <div class="modal">
-    <div class="row-between"><h3>☁️ Aaj Ka Backup</h3><button class="close-x" onclick="closeBackupReminder()">✕</button></div>
-    <div style="font-size:13px; opacity:.75; margin-bottom:14px; line-height:1.6;">Roz ka data mehfooz rakhne ke liye backup email par bhej dein — <b class="mono">gulishopinstallment@gmail.com</b></div>
+    <div class="row-between"><h3>☁️ Weekly Backup</h3><button class="close-x" onclick="closeBackupReminder()">✕</button></div>
+    <div style="font-size:13px; opacity:.75; margin-bottom:14px; line-height:1.6;">Roz ka backup is phone mein khud-b-khud save ho raha hai. Ismein extra safety ke liye, hafte mein ek baar backup email par bhi bhej dein — <b class="mono">gulishopinstallment@gmail.com</b></div>
     <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="backupReminderSend()">✉️ Abhi Email Karein</button>
     <button class="btn btn-outline btn-block" onclick="closeBackupReminder()">Baad Mein</button>
   </div>
@@ -1123,6 +1123,15 @@ function computeTotals(){
   const totalCollected = STATS_RESET_RECOVERY + payments
     .filter(p=>receivableIds.has(p.partyId) && p.date > STATS_RESET_DATE)
     .reduce((s,p)=>s+Number(p.amount||0),0);
+  // Monthly Recovery = collection for the CURRENT calendar month only
+  // (resets automatically each new month). If the reset month is the
+  // current month, the fixed baseline is included since it was collected
+  // within this same month; older months never include it.
+  const currentMonthKey = today.slice(0,7);
+  let totalCollectedThisMonth = payments
+    .filter(p=>receivableIds.has(p.partyId) && monthKeyOf(p.date)===currentMonthKey && p.date > STATS_RESET_DATE)
+    .reduce((s,p)=>s+Number(p.amount||0),0);
+  if(currentMonthKey === STATS_RESET_DATE.slice(0,7)) totalCollectedThisMonth += STATS_RESET_RECOVERY;
   const todayCollection = payments.filter(p=>p.date===today && receivableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0);
   // Total Investment now simply mirrors Baqaya Total — "kitna paisa abhi
   // wasool karna baaki hai" — per the 18-Aug-2026 reset, instead of the
@@ -1152,7 +1161,7 @@ function computeTotals(){
     return graceDueDate(computeNextDue(p)) < today;
   }).length;
   const atRiskCount = parties.filter(p=>p.atRisk && partyBalance(p.id).balance>0).length;
-  return { totalOutstanding, totalPayableOutstanding, totalCollected, todayCollection, totalInvestment, totalProfitEarned, roiPercent, activeParties, activeReceivable, activePayable, overdueCount, atRiskCount, totalPartiesCount: parties.length };
+  return { totalOutstanding, totalPayableOutstanding, totalCollected, totalCollectedThisMonth, todayCollection, totalInvestment, totalProfitEarned, roiPercent, activeParties, activeReceivable, activePayable, overdueCount, atRiskCount, totalPartiesCount: parties.length };
 }
 
 /* ===================== INSTALLMENT SCHEDULE / REMINDERS ===================== */
@@ -2614,7 +2623,7 @@ function renderDashboard(){
   updateBalanceToggleIcon();
   document.getElementById('statToday').textContent = maskMoney(fmtMoney(t.todayCollection));
   document.getElementById('statOutstanding').textContent = maskMoney(fmtMoney(t.totalOutstanding));
-  document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollected));
+  document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollectedThisMonth));
   document.getElementById('statInvestment').textContent = maskMoney(fmtMoney(t.totalInvestment));
   document.getElementById('statActive').textContent = t.activeParties;
   document.getElementById('statPayable').textContent = maskMoney(fmtMoney(t.totalPayableOutstanding));
@@ -2732,13 +2741,16 @@ function renderPartyDetail(id){
   const ledgerRows = partyPayments.length===0
     ? '<div class="empty">Abhi koi payment darj nahi hui.</div>'
     : partyPayments.map(p => `
-      <div class="ledger-row">
-        <div><span style="opacity:.6;">${fmtDate(p.date)} · ${p.method}</span></div>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span class="mono" style="color:var(--teal); font-weight:700;">${fmtMoney(p.amount)}</span>
-          <button class="icon-btn" title="Bill Share Karein" onclick="openShareModal(${party.id}, ${p.id})">📤</button>
-          <button class="icon-btn" title="Delete" onclick="deletePayment(${p.id})">🗑️</button>
+      <div class="ledger-row" style="flex-direction:column; align-items:stretch;">
+        <div class="row-between">
+          <div><span style="opacity:.6;">${fmtDate(p.date)} · ${p.method}</span></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="mono" style="color:var(--teal); font-weight:700;">${fmtMoney(p.amount)}</span>
+            <button class="icon-btn" title="Bill Share Karein" onclick="openShareModal(${party.id}, ${p.id})">📤</button>
+            <button class="icon-btn" title="Delete" onclick="deletePayment(${p.id})">🗑️</button>
+          </div>
         </div>
+        ${p.note ? `<div style="font-size:12px; opacity:.65; margin-top:4px; white-space:pre-wrap;">📝 ${p.note}</div>` : ''}
       </div>`).join('');
 
   document.getElementById('partyDetailBody').innerHTML = `
@@ -2816,6 +2828,7 @@ function renderPartyDetail(id){
         <button class="method-btn" data-m="EasyPaisa" onclick="selectPayMethod(this)">📱 EasyPaisa</button>
         <button class="method-btn" data-m="JazzCash" onclick="selectPayMethod(this)">📱 JazzCash</button>
       </div>
+      <textarea id="payNote" rows="2" placeholder="Note (optional) — kis ke sath, kahan, kis kaam ke liye di/li..." style="width:100%; margin-bottom:8px; padding:10px; border-radius:10px; border:1px solid var(--line); font-family:inherit; font-size:13px; resize:vertical;"></textarea>
       <button class="btn btn-gold btn-block" onclick="submitPayment(${party.id})">Payment Save Karein</button>
     </div>
 
@@ -2857,11 +2870,13 @@ function submitPayment(partyId){
   if(!amount || amount<=0){ showToast('Sahi amount likhein', 'error'); return; }
   const date = document.getElementById('payDate').value || todayStr();
   const method = document.querySelector('#payMethodRow .method-btn.active')?.dataset.m || 'Cash';
+  const note = document.getElementById('payNote').value.trim();
   const party = parties.find(p=>p.id===partyId);
   const balBefore = partyBalance(partyId).balance;
-  const rec = addPayment(partyId, { amount, method, date });
+  const rec = addPayment(partyId, { amount, method, date, note });
   showToast('Payment darj ho gayi');
   document.getElementById('payAmount').value = '';
+  document.getElementById('payNote').value = '';
   renderPartyDetail(partyId);
   openShareModal(partyId, rec.id);
 }
@@ -2985,6 +3000,22 @@ document.getElementById('reportDateTo').value = todayStr();
 renderAll();
 checkDueReminders(); // sirf tab notify karta hai jab permission pehle se granted ho — koi extra popup nahi
 
+/* ===================== AUTOMATIC DAILY LOCAL BACKUP =====================
+   Silently downloads a dated JSON backup file to the phone's Downloads
+   folder once per day (first app-open of the day) — no tap needed. This
+   protects against data loss even if cloud sync or this device fails,
+   since a copy lands outside the app/localStorage every single day. */
+const AUTO_BACKUP_DONE_KEY = 'guli_shop_last_auto_backup';
+function runAutoDailyBackup(){
+  try{
+    if(!parties.length && !payments.length) return; // abhi koi data hi nahi
+    const last = localStorage.getItem(AUTO_BACKUP_DONE_KEY);
+    if(last === todayStr()) return; // aaj ka auto-backup ho chuka hai
+    exportJSON();
+    localStorage.setItem(AUTO_BACKUP_DONE_KEY, todayStr());
+  }catch(e){}
+}
+
 function markBackupDoneToday(){
   try{ localStorage.setItem(BACKUP_DONE_KEY, todayStr()); }catch(e){}
   const el = document.getElementById('lastBackupInfo');
@@ -2992,8 +3023,13 @@ function markBackupDoneToday(){
 }
 function checkDailyBackupReminder(){
   try{
+    // Offsite (email) backup reminder — shown every 7 days, since the
+    // local auto-backup above already runs daily on its own.
     const lastShown = localStorage.getItem(BACKUP_REMIND_KEY);
-    if(lastShown === todayStr()) return; // aaj already dikha chuke
+    if(lastShown){
+      const daysSince = Math.floor((new Date(todayStr()) - new Date(lastShown)) / 86400000);
+      if(daysSince < 7) return;
+    }
     if(!parties.length && !payments.length) return; // koi data hi nahi to reminder ki zaroorat nahi
     localStorage.setItem(BACKUP_REMIND_KEY, todayStr());
     const modal = document.getElementById('backupReminderModal');
@@ -3299,7 +3335,8 @@ function completeUnlock(){
   document.getElementById('loginScreen').classList.add('hidden');
   try{ sessionStorage.setItem(SESSION_UNLOCK_KEY, '1'); }catch(e){}
   resetInactivityTimer();
-  setTimeout(checkDailyBackupReminder, 600);
+  setTimeout(runAutoDailyBackup, 600);
+  setTimeout(checkDailyBackupReminder, 900);
 }
 
 function lockApp(){
