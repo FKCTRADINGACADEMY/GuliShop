@@ -2560,23 +2560,34 @@ function renderMonthlyCharts(){
   months.forEach(m=>{ recoveryByMonth[m]=0; saleByMonth[m]=0; profitByMonth[m]=0; });
 
   // Recovery = actual cash collected FROM customers (receivable parties only).
+  // Baseline reset (see STATS_RESET_DATE above): payments on/before the
+  // reset date don't count here — only fresh payments from after that date.
+  // The fixed Rs. 2,500 baseline is added into the reset month's own bucket.
   payments.forEach(p=>{
     if(!receivableIds.has(p.partyId)) return;
+    if(p.date <= STATS_RESET_DATE) return;
     const k = monthKeyOf(p.date);
     if(k in recoveryByMonth) recoveryByMonth[k] += Number(p.amount||0);
   });
+  const resetMonthKey = STATS_RESET_DATE.slice(0,7);
+  if(resetMonthKey in recoveryByMonth) recoveryByMonth[resetMonthKey] += STATS_RESET_RECOVERY;
   // Sale = value of items sold (new receivable parties), grouped by the
   // month they were added. Profit = the markup portion of that sale
   // (Price + Markup% = Total — the markup amount IS the profit).
+  // Baseline reset: only parties added AFTER the reset date count here —
+  // old parties are excluded so Sale/Profit charts start fresh at 0.
   parties.forEach(p=>{
     if(isPayable(p)) return;
+    if(!p.dateAdded || p.dateAdded <= STATS_RESET_DATE) return;
     const k = monthKeyOf(p.startDate);
     if(!(k in saleByMonth)) return;
     saleByMonth[k] += Number(p.totalAmount||0);
     profitByMonth[k] += Number(p.price||0) * Number(p.markupPercent||0) / 100;
   });
   // Net profit/loss also subtracts that month's shop expenses (kharcha).
+  // Baseline reset: only expenses dated after the reset date count.
   expenses.forEach(e=>{
+    if(e.date <= STATS_RESET_DATE) return;
     const k = monthKeyOf(e.date);
     if(k in profitByMonth) profitByMonth[k] -= Number(e.amount||0);
   });
