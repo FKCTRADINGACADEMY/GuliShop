@@ -1097,6 +1097,16 @@ function partyBalance(partyId){
   const bal = Number(p.totalAmount||0) - totalPaid;
   return { totalPaid, balance: Math.max(bal,0), overpaid: bal < 0 ? -bal : 0 };
 }
+// ===================== STATS RESET BASELINE (18-Aug-2026) =====================
+// On this date, Ab Tak Recovery and Profit were reset to real-world values
+// (Recovery=2500, Profit=0) at the user's request. Party records/balances
+// themselves were NOT touched — only these two running dashboard totals.
+// From this date onward, new payments/parties add on top of the baseline
+// automatically, so the dashboard keeps working normally going forward.
+const STATS_RESET_DATE = '2026-08-18';
+const STATS_RESET_RECOVERY = 2500;
+const STATS_RESET_PROFIT = 0;
+
 function computeTotals(){
   const today = todayStr();
   const receivableParties = parties.filter(p=>!isPayable(p));
@@ -1107,21 +1117,24 @@ function computeTotals(){
   // Recovery/collection totals must only count actual installment (qist)
   // payments coming IN from customers after the sale — NOT the advance
   // taken at party add time. The advance is part of the sale itself (and
-  // is the shop's profit — see totalInvestment below), not a "recovery".
-  const totalCollected = payments.filter(p=>receivableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0);
+  // is the shop's profit — see totalProfitEarned below), not a "recovery".
+  // Baseline reset: everything up to STATS_RESET_DATE collapses into the
+  // fixed baseline amount; only payments dated AFTER that count on top.
+  const totalCollected = STATS_RESET_RECOVERY + payments
+    .filter(p=>receivableIds.has(p.partyId) && p.date > STATS_RESET_DATE)
+    .reduce((s,p)=>s+Number(p.amount||0),0);
   const todayCollection = payments.filter(p=>p.date===today && receivableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0);
-  // Total Investment = the shop's own money tied up in installment sales —
-  // i.e. totalAmount minus the advance received at sale time (the advance
-  // itself is profit, taken upfront, not capital invested). This is a
-  // running/cumulative figure: once a party is added it counts toward
-  // total investment permanently, even after their installments are fully
-  // recovered — it reflects total capital ever deployed, not what's still
-  // outstanding (that's "Baqaya Total" above).
-  const totalInvestment = receivableParties.reduce((s,p)=>s+Math.max(Number(p.totalAmount||0)-Number(p.advancePaid||0),0),0);
-  // Profit Earned = the advance taken at sale time, summed across every
-  // receivable party (this is money already fully in-hand, not "at risk"
-  // like the installment-based investment above).
-  const totalProfitEarned = receivableParties.reduce((s,p)=>s+Number(p.advancePaid||0),0);
+  // Total Investment now simply mirrors Baqaya Total — "kitna paisa abhi
+  // wasool karna baaki hai" — per the 18-Aug-2026 reset, instead of the
+  // old cumulative-capital-ever-deployed figure.
+  const totalInvestment = totalOutstanding;
+  // Profit Earned = the advance taken at sale time. Baseline reset: old
+  // parties' advances (added on/before STATS_RESET_DATE) are folded into
+  // the fixed baseline; only parties added AFTER that date add fresh
+  // profit on top.
+  const totalProfitEarned = STATS_RESET_PROFIT + receivableParties
+    .filter(p=>p.dateAdded && p.dateAdded > STATS_RESET_DATE)
+    .reduce((s,p)=>s+Number(p.advancePaid||0),0);
   // ROI = kitna % profit hai us investment ke muqable jo abhi tak lagayi
   // gayi hai (advance ke baad jo baqi tha).
   const roiPercent = totalInvestment>0 ? (totalProfitEarned/totalInvestment*100) : 0;
@@ -2467,7 +2480,8 @@ function submitAddParty(){
     advancePaid: Number(document.getElementById('npAdvance').value||0),
     installmentAmount: calc.installmentAmount,
     frequency: document.getElementById('npFrequency').value,
-    startDate: document.getElementById('npStart').value || todayStr()
+    startDate: document.getElementById('npStart').value || todayStr(),
+    dateAdded: todayStr()
   };
   addPartyRecord(party);
   const linkedStockId = Number(document.getElementById('npStockItem')?.value || 0);
