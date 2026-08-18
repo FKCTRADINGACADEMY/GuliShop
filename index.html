@@ -364,12 +364,37 @@
       <div class="stat-grid">
         <div class="stat-card" onclick="goToPartiesFilter('receivable')" style="--sc-accent:var(--brick);"><span class="stat-icon">📌</span><div class="stat-label">Baqaya Total</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
         <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--gold);"><span class="stat-icon">💰</span><div class="stat-label">Ab Tak Recovery</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
+        <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--brick);"><span class="stat-icon">🏗️</span><div class="stat-label">Total Investment</div><div class="stat-value mono" id="statInvestment" style="color:var(--brick);">Rs. 0</div></div>
         <div class="stat-card" onclick="goToPartiesFilter('all')" style="--sc-accent:var(--teal);"><span class="stat-icon">👥</span><div class="stat-label">Active Parties</div><div class="stat-value mono" id="statActive">0</div></div>
         <div class="stat-card wide" onclick="goToPartiesFilter('payable')" style="--sc-accent:var(--teal);">
           <div><span class="stat-icon">🤝</span></div>
           <div style="flex:1; margin-left:8px;"><div class="stat-label">Mujhe Dena Hai (Udhaar)</div><div class="stat-value mono" id="statPayable" style="color:var(--teal);">Rs. 0</div></div>
         </div>
       </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="row-between" style="margin-bottom:8px;">
+          <span style="font-weight:700; font-size:13px;">📊 Profit vs Investment</span>
+          <span class="mono" style="font-size:12px; font-weight:700; color:var(--teal);" id="statROI">ROI 0%</span>
+        </div>
+        <div class="row-between" style="font-size:12px; margin-bottom:6px;">
+          <span style="opacity:.7;">💵 Profit (Advance se)</span>
+          <span class="mono" style="font-weight:700; color:var(--gold);" id="statProfitEarned">Rs. 0</span>
+        </div>
+        <div class="row-between" style="font-size:12px;">
+          <span style="opacity:.7;">🏗️ Investment Wasool (Qist se)</span>
+          <span class="mono" style="font-weight:700; color:var(--teal);" id="statInvestmentRecovered">Rs. 0 / Rs. 0</span>
+        </div>
+        <div style="background:var(--line); height:6px; border-radius:3px; margin-top:8px; overflow:hidden;">
+          <div id="investmentRecoveryBar" style="background:var(--teal); height:100%; width:0%;"></div>
+        </div>
+      </div>
+
+      <div class="stat-grid" style="margin-bottom:12px;">
+        <div class="stat-card" onclick="goToPartiesFilter('overdue')" style="--sc-accent:var(--brick);"><span class="stat-icon">⏰</span><div class="stat-label">Overdue Parties</div><div class="stat-value mono" id="statOverdue" style="color:var(--brick);">0</div></div>
+        <div class="stat-card" onclick="goToPartiesFilter('atrisk')" style="--sc-accent:var(--brick);"><span class="stat-icon">🚩</span><div class="stat-label">At Risk</div><div class="stat-value mono" id="statAtRisk" style="color:var(--brick);">0</div></div>
+      </div>
+
       <div class="quick-tool-card" onclick="showView('calculator')">
         <div class="qt-icon">🧮</div>
         <div style="flex:1;">
@@ -412,6 +437,7 @@
         <button type="button" class="filter-chip" data-f="receivable" onclick="setPartyFilter('receivable')">📌 Mujhe Lena Hai</button>
         <button type="button" class="filter-chip" data-f="payable" onclick="setPartyFilter('payable')">🤝 Mujhe Dena Hai</button>
         <button type="button" class="filter-chip" data-f="overdue" onclick="setPartyFilter('overdue')">⏰ Overdue</button>
+        <button type="button" class="filter-chip" data-f="atrisk" onclick="setPartyFilter('atrisk')">🚩 At Risk</button>
       </div>
       <div class="searchbar">
         <input id="partySearch" placeholder="Naam, number ya item dhoondein" oninput="renderPartiesList()">
@@ -428,9 +454,12 @@
 
     <!-- REPORTS -->
     <div class="view" id="view-reports">
-      <div class="section-title" style="margin-top:0;">Daily Report</div>
+      <div class="section-title" style="margin-top:0;">Daily / Range Report</div>
       <div class="card">
-        <input type="date" id="reportDate" onchange="renderReports()" style="margin-bottom:10px;">
+        <div class="grid2" style="margin-bottom:10px; gap:8px;">
+          <div><label style="font-size:11px; opacity:.6; display:block; margin-bottom:3px;">From</label><input type="date" id="reportDate" onchange="reportRangeChanged()"></div>
+          <div><label style="font-size:11px; opacity:.6; display:block; margin-bottom:3px;">To</label><input type="date" id="reportDateTo" onchange="reportRangeChanged()"></div>
+        </div>
         <div class="row-between" style="margin-bottom:8px;">
           <span style="font-size:12px; opacity:.6;" id="dailyCount">0 payments</span>
           <span class="mono" style="color:var(--teal); font-weight:700;" id="dailyTotal">Rs. 0</span>
@@ -438,15 +467,16 @@
         <div id="dailyPaymentsList"></div>
         <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadDailyCSV()">⬇ Google Sheet (CSV) Download</button>
       </div>
-      <div class="section-title">Business Overview — Pichle 7 Din</div>
+      <div class="section-title">Cash Flow — Pichle 7 Din</div>
       <div class="card">
-        <div class="grid2" style="margin-bottom:12px;">
-          <div><div class="stat-label">Recovery (7 din)</div><div class="stat-value mono" id="statWeekIncome" style="color:var(--teal);">Rs. 0</div></div>
-          <div><div class="stat-label">Kharcha (7 din)</div><div class="stat-value mono" id="statWeekExpense" style="color:var(--brick);">Rs. 0</div></div>
+        <div class="grid2" style="margin-bottom:8px;">
+          <div><div class="stat-label">Cash In (7 din)</div><div class="stat-value mono" id="statWeekIncome" style="color:var(--teal);">Rs. 0</div></div>
+          <div><div class="stat-label">Cash Out (7 din)</div><div class="stat-value mono" id="statWeekExpense" style="color:var(--brick);">Rs. 0</div></div>
         </div>
+        <div style="margin-bottom:12px;"><div class="stat-label">Net Cash Flow (7 din)</div><div class="stat-value mono" id="statWeekNet">Rs. 0</div></div>
         <div id="weekBarChart" style="display:flex; align-items:flex-end; gap:6px; height:120px; border-bottom:1px solid var(--line); padding-bottom:4px;"></div>
         <div id="weekBarLabels" style="display:flex; gap:6px; font-size:9px; opacity:.6; margin-top:4px; text-align:center;"></div>
-        <div style="font-size:10px; opacity:.55; margin-top:8px;"><span style="color:var(--teal);">■</span> Recovery &nbsp; <span style="color:var(--brick);">■</span> Kharcha</div>
+        <div style="font-size:10px; opacity:.55; margin-top:8px;"><span style="color:var(--teal);">■</span> Cash In (qist wasooli) &nbsp; <span style="color:var(--brick);">■</span> Cash Out (kharcha + udhaar ki adaiygi)</div>
       </div>
 
       <div class="section-title">All Party Report</div>
@@ -1074,19 +1104,42 @@ function computeTotals(){
   const receivableIds = new Set(receivableParties.map(p=>p.id));
   const totalOutstanding = receivableParties.reduce((s,p)=>s+partyBalance(p.id).balance,0);
   const totalPayableOutstanding = payableParties.reduce((s,p)=>s+partyBalance(p.id).balance,0);
-  // Recovery/collection totals must only count money coming IN from customers
-  // (receivable parties). Money paid OUT to a payable party ("mujhe dena
-  // hai" — what the shop itself owes) is a payout, not a recovery, so it's
-  // deliberately excluded here.
-  const totalCollected = receivableParties.reduce((s,p)=>s+partyBalance(p.id).totalPaid,0);
+  // Recovery/collection totals must only count actual installment (qist)
+  // payments coming IN from customers after the sale — NOT the advance
+  // taken at party add time. The advance is part of the sale itself (and
+  // is the shop's profit — see totalInvestment below), not a "recovery".
+  const totalCollected = payments.filter(p=>receivableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0);
   const todayCollection = payments.filter(p=>p.date===today && receivableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0);
+  // Total Investment = the shop's own money tied up in installment sales —
+  // i.e. totalAmount minus the advance received at sale time (the advance
+  // itself is profit, taken upfront, not capital invested). This is a
+  // running/cumulative figure: once a party is added it counts toward
+  // total investment permanently, even after their installments are fully
+  // recovered — it reflects total capital ever deployed, not what's still
+  // outstanding (that's "Baqaya Total" above).
+  const totalInvestment = receivableParties.reduce((s,p)=>s+Math.max(Number(p.totalAmount||0)-Number(p.advancePaid||0),0),0);
+  // Profit Earned = the advance taken at sale time, summed across every
+  // receivable party (this is money already fully in-hand, not "at risk"
+  // like the installment-based investment above).
+  const totalProfitEarned = receivableParties.reduce((s,p)=>s+Number(p.advancePaid||0),0);
+  // ROI = kitna % profit hai us investment ke muqable jo abhi tak lagayi
+  // gayi hai (advance ke baad jo baqi tha).
+  const roiPercent = totalInvestment>0 ? (totalProfitEarned/totalInvestment*100) : 0;
   const activeReceivable = receivableParties.filter(p=>partyBalance(p.id).balance>0).length;
   const activePayable = payableParties.filter(p=>partyBalance(p.id).balance>0).length;
   // "Active Parties" on the dashboard covers everyone with an open balance —
   // both people who owe the shop (receivable) and parties the shop owes
   // (payable) — so the dashboard number matches the full Parties list.
   const activeParties = activeReceivable + activePayable;
-  return { totalOutstanding, totalPayableOutstanding, totalCollected, todayCollection, activeParties, activeReceivable, activePayable, totalPartiesCount: parties.length };
+  // Overdue = receivable parties whose grace period (due date + 5 din) has
+  // already passed and who still owe money.
+  const overdueCount = receivableParties.filter(p=>{
+    const b = partyBalance(p.id);
+    if(b.balance<=0) return false;
+    return graceDueDate(computeNextDue(p)) < today;
+  }).length;
+  const atRiskCount = parties.filter(p=>p.atRisk && partyBalance(p.id).balance>0).length;
+  return { totalOutstanding, totalPayableOutstanding, totalCollected, todayCollection, totalInvestment, totalProfitEarned, roiPercent, activeParties, activeReceivable, activePayable, overdueCount, atRiskCount, totalPartiesCount: parties.length };
 }
 
 /* ===================== INSTALLMENT SCHEDULE / REMINDERS ===================== */
@@ -1307,17 +1360,31 @@ function toggleAutoReminder(partyId){
       if(!granted){ showToast('Notification permission zaroori hai auto-reminder ke liye', 'error'); return; }
       party.autoReminder = true;
       party.lastReminderNotified = null;
-      save();
+      cloudSet('parties', party); saveLocal();
       showToast('Auto-Reminder ON — jab tak baqaya clear na ho, khud yaad dilayega');
       renderPartyDetail(partyId);
       checkDueReminders();
     });
   } else {
     party.autoReminder = false;
-    save();
+    cloudSet('parties', party); saveLocal();
     showToast('Auto-Reminder OFF kar diya');
     renderPartyDetail(partyId);
   }
+}
+// "At Risk" / bad-debt flag — koi party jo qist dena band kar de ya jis se
+// vasooli ka bharosa na raho, usay yahan se manually flag kiya ja sakta
+// hai. Ye sirf ek marker hai (dashboard aur parties list mein dikhta hai)
+// — koi automatic calculation isay set nahi karta.
+function toggleAtRisk(partyId){
+  const party = parties.find(p=>p.id===partyId);
+  if(!party) return;
+  party.atRisk = !party.atRisk;
+  cloudSet('parties', party); saveLocal();
+  showToast(party.atRisk ? '🚩 Party \'At Risk\' mark kar di gayi' : 'At Risk hata diya gaya');
+  renderPartyDetail(partyId);
+  renderPartiesList();
+  renderDashboard();
 }
 /* ===================== REMINDER TUNE (BEEP) =====================
    Web Audio API se generate hone wali chhoti si "ting-ting-ting" tune —
@@ -1376,33 +1443,59 @@ function fireReminderNotification(party, dueDate, balance, isAdvance){
     };
   }catch(e){ /* notification blocked/unsupported — silently skip */ }
 }
+function fireOverdueEscalationNotification(party, grace, balance){
+  try{
+    const n = new Notification('Guli Shop — Sakht Overdue ⚠️', {
+      body: party.name + ' ki qist grace date (' + fmtDate(grace) + ') se aage nikal chuki hai — Baqaya ' + fmtMoney(balance) + '. Follow-up zaroori hai.',
+      icon: 'icon-192.png',
+      tag: 'overdue-'+party.id+'-'+todayStr(),
+      renotify: true,
+      silent: false
+    });
+    playReminderTune();
+    n.onclick = function(){ window.focus(); openParty(party.id); };
+  }catch(e){ /* notification blocked/unsupported — silently skip */ }
+}
 function checkDueReminders(){
   if(!notifPermissionGranted()) return;
   const today = todayStr();
   const tomorrow = addInterval(today, 'Daily');
-  let changed = false;
+  const changedParties = [];
   parties.forEach(party=>{
     if(!party.autoReminder || !party.phone) return;
     const bal = partyBalance(party.id).balance;
     if(bal<=0){
-      if(party.autoReminder){ party.autoReminder = false; changed = true; }
+      if(party.autoReminder){ party.autoReminder = false; changedParties.push(party); }
       return;
     }
     const due = computeNextDue(party);
+    let touched = false;
     // 1 din pehle "advance" yaad dahani — taake party ko waqt mil jaye.
     if(due === tomorrow && party.lastAdvanceNotified !== due){
       fireReminderNotification(party, due, bal, true);
       party.lastAdvanceNotified = due;
-      changed = true;
+      touched = true;
     }
-    // Due/overdue din par asal reminder.
+    // Due/overdue din par asal reminder (ek dafa, jab tak due date badle nahi).
     if(due <= today && party.lastReminderNotified !== due){
       fireReminderNotification(party, due, bal, false);
       party.lastReminderNotified = due;
-      changed = true;
+      touched = true;
     }
+    // Grace period (due + 5 din) se aage nikal jaye to har din ek escalation
+    // reminder — ye "at risk" hone se pehle warning ka kaam deta hai.
+    const grace = graceDueDate(due);
+    if(grace < today && party.lastOverdueNotified !== today){
+      fireOverdueEscalationNotification(party, grace, bal);
+      party.lastOverdueNotified = today;
+      touched = true;
+    }
+    if(touched) changedParties.push(party);
   });
-  if(changed) save();
+  if(changedParties.length){
+    changedParties.forEach(p => cloudSet('parties', p));
+    saveLocal();
+  }
 }
 // App khulte/resume hote hi turant check — sirf timer ke bharose nahi baithte.
 // Phir jab tak app/tab khuli rahe, har 1 ghante mein dobara check.
@@ -2049,11 +2142,13 @@ function exportCSV(rows, filename, headers){
   showToast('Report download ho gayi');
 }
 function downloadDailyCSV(){
-  const d = document.getElementById('reportDate').value || todayStr();
-  const rows = payments.filter(p=>p.date===d).map(p=>({
+  const from = document.getElementById('reportDate').value || todayStr();
+  const to = document.getElementById('reportDateTo').value || from;
+  const rows = payments.filter(p=>p.date>=from && p.date<=to).map(p=>({
     Naam: parties.find(x=>x.id===p.partyId)?.name || '', Amount: p.amount, Method: p.method, Date: p.date
   }));
-  exportCSV(rows, 'daily-report-'+d+'.csv', ['Naam','Amount','Method','Date']);
+  const label = from===to ? from : (from+'_to_'+to);
+  exportCSV(rows, 'daily-report-'+label+'.csv', ['Naam','Amount','Method','Date']);
 }
 function downloadAllPartyCSV(){
   const rows = parties.map(p=>{
@@ -2495,8 +2590,16 @@ function renderDashboard(){
   document.getElementById('statToday').textContent = maskMoney(fmtMoney(t.todayCollection));
   document.getElementById('statOutstanding').textContent = maskMoney(fmtMoney(t.totalOutstanding));
   document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollected));
+  document.getElementById('statInvestment').textContent = maskMoney(fmtMoney(t.totalInvestment));
   document.getElementById('statActive').textContent = t.activeParties;
   document.getElementById('statPayable').textContent = maskMoney(fmtMoney(t.totalPayableOutstanding));
+  document.getElementById('statROI').textContent = 'ROI ' + Math.round(t.roiPercent) + '%';
+  document.getElementById('statProfitEarned').textContent = maskMoney(fmtMoney(t.totalProfitEarned));
+  document.getElementById('statInvestmentRecovered').textContent = maskMoney(fmtMoney(t.totalCollected) + ' / ' + fmtMoney(t.totalInvestment));
+  const investPct = t.totalInvestment>0 ? Math.min(100, Math.round(t.totalCollected/t.totalInvestment*100)) : 0;
+  document.getElementById('investmentRecoveryBar').style.width = investPct + '%';
+  document.getElementById('statOverdue').textContent = t.overdueCount;
+  document.getElementById('statAtRisk').textContent = t.atRiskCount;
   updateSidebarCounts();
   renderMonthlyCharts();
 
@@ -2533,6 +2636,7 @@ function renderPartiesList(){
       const grace = graceDueDate(computeNextDue(p));
       if(grace >= today) return false;
     }
+    if(partyListFilter==='atrisk' && !p.atRisk) return false;
     if(!q) return true;
     return p.name.toLowerCase().includes(q) || (p.phone||'').includes(q) || (p.item||'').toLowerCase().includes(q);
   });
@@ -2541,6 +2645,7 @@ function renderPartiesList(){
     const emptyMsg = partyListFilter==='payable' ? 'Koi party nahi jinhe dena hai.'
       : partyListFilter==='receivable' ? 'Koi party nahi jinse lena hai.'
       : partyListFilter==='overdue' ? 'Koi party overdue nahi — sub theek waqt par hai.'
+      : partyListFilter==='atrisk' ? 'Koi party \'At Risk\' mark nahi ki gayi.'
       : 'Koi party nahi mili. Nayi party judiye.';
     box.innerHTML = `<div class="empty">${emptyMsg}</div>`;
     return;
@@ -2561,6 +2666,7 @@ function renderPartiesList(){
           ${p.phone ? `<div class="pmeta">📞 ${p.phone}</div>` : ''}
         </div>
         <div style="display:flex; align-items:flex-start; gap:8px;">
+          ${p.atRisk ? `<span class="stamp" style="color:var(--brick); border-color:var(--brick);">🚩 At Risk</span>` : ''}
           ${stampHtml}
           <button class="icon-btn" title="Party edit karein" onclick="event.stopPropagation(); openEditPartyModal(${p.id})">✏️</button>
         </div>
@@ -2627,6 +2733,35 @@ function renderPartyDetail(id){
       </div>
       ${party.price != null ? `<div style="font-size:12px; opacity:.6; margin-top:8px;">Payment: ${fmtMoney(party.price)} + Markup (${party.markupPercent||0}%): ${fmtMoney(party.price*(party.markupPercent||0)/100)} = Total ${fmtMoney(party.totalAmount)}</div>` : ''}
       ${party.installmentAmount ? `<div style="font-size:12px; opacity:.6; margin-top:4px;">Qist: ${fmtMoney(party.installmentAmount)} / ${party.frequency}${party.installmentCount?(' × '+party.installmentCount):''}</div>` : ''}
+    </div>
+
+    ${!payable ? (()=>{
+      const partyProfit = Number(party.advancePaid||0);
+      const partyInvestment = Math.max(Number(party.totalAmount||0) - partyProfit, 0);
+      const partyInvestmentRecovered = Math.max(bal.totalPaid - partyProfit, 0);
+      const pct = partyInvestment>0 ? Math.min(100, Math.round(partyInvestmentRecovered/partyInvestment*100)) : 100;
+      return `
+    <div class="card">
+      <div style="font-weight:600; font-size:13px; margin-bottom:8px;">💵 Profit / Investment (Is Party Se)</div>
+      <div class="row-between" style="font-size:12px; margin-bottom:6px;">
+        <span style="opacity:.7;">Profit (Advance)</span>
+        <span class="mono" style="font-weight:700; color:var(--gold);">${fmtMoney(partyProfit)}</span>
+      </div>
+      <div class="row-between" style="font-size:12px;">
+        <span style="opacity:.7;">Investment Wasool</span>
+        <span class="mono" style="font-weight:700; color:var(--teal);">${fmtMoney(partyInvestmentRecovered)} / ${fmtMoney(partyInvestment)}</span>
+      </div>
+      <div style="background:var(--line); height:6px; border-radius:3px; margin-top:8px; overflow:hidden;">
+        <div style="background:var(--teal); height:100%; width:${pct}%;"></div>
+      </div>
+    </div>`;
+    })() : ''}
+
+    <div class="card">
+      <div class="row-between" style="align-items:center;">
+        <div style="font-size:12px; opacity:.7;">🚩 Is party se vasooli ka bharosa kam hai?</div>
+        <button class="btn ${party.atRisk?'btn-outline':'btn-outline-teal'} btn-sm" style="${party.atRisk?'color:var(--brick); border-color:var(--brick);':''}" onclick="toggleAtRisk(${party.id})">${party.atRisk?'🚩 At Risk (hatayein)':'At Risk Mark Karein'}</button>
+      </div>
     </div>
 
     ${bal.balance>0 && party.installmentAmount ? `
@@ -2707,21 +2842,34 @@ function submitPayment(partyId){
 }
 
 /* ===================== RENDER: REPORTS ===================== */
+// "reportDate" (From) aur "reportDateTo" (To) mil kar ek date-range banate
+// hain — ek hi din chaho to dono ek jaisi date rakh dein (default yehi
+// hota hai), ya alag "To" chun kar poori range ka report/CSV le sakte hain.
+function reportRangeChanged(){
+  const from = document.getElementById('reportDate');
+  const to = document.getElementById('reportDateTo');
+  if(to.value && to.value < from.value) to.value = from.value;
+  renderReports();
+}
 function renderReports(){
   const dateInput = document.getElementById('reportDate');
+  const dateToInput = document.getElementById('reportDateTo');
   if(!dateInput.value) dateInput.value = todayStr();
-  const d = dateInput.value;
-  const dailyPayments = payments.filter(p=>p.date===d);
+  if(!dateToInput.value) dateToInput.value = dateInput.value;
+  const from = dateInput.value;
+  const to = dateToInput.value < from ? from : dateToInput.value;
+  const isRange = from !== to;
+  const dailyPayments = payments.filter(p=>p.date>=from && p.date<=to);
   const dailyTotal = dailyPayments.reduce((s,p)=>s+Number(p.amount||0),0);
-  document.getElementById('dailyCount').textContent = dailyPayments.length + ' payments';
+  document.getElementById('dailyCount').textContent = dailyPayments.length + ' payments' + (isRange ? ' (' + fmtDate(from) + ' – ' + fmtDate(to) + ')' : '');
   document.getElementById('dailyTotal').textContent = fmtMoney(dailyTotal);
   const list = document.getElementById('dailyPaymentsList');
   if(dailyPayments.length===0){
-    list.innerHTML = '<div class="empty">Is din koi payment nahi hui.</div>';
+    list.innerHTML = '<div class="empty">Is date range mein koi payment nahi hui.</div>';
   } else {
-    list.innerHTML = dailyPayments.map(p=>{
+    list.innerHTML = [...dailyPayments].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>{
       const party = parties.find(x=>x.id===p.partyId);
-      return `<div class="ledger-row"><span>${party?.name||'Unknown'} <span style="opacity:.5; font-size:11px;">(${p.method})</span></span><span class="mono">${fmtMoney(p.amount)}</span></div>`;
+      return `<div class="ledger-row"><span>${party?.name||'Unknown'} <span style="opacity:.5; font-size:11px;">(${p.method}${isRange?(' · '+fmtDate(p.date)):''})</span></span><span class="mono">${fmtMoney(p.amount)}</span></div>`;
     }).join('');
   }
 
@@ -2747,19 +2895,32 @@ function renderWeekBarChart(){
     const d = new Date(); d.setDate(d.getDate()-i);
     days.push(d.toISOString().slice(0,10));
   }
-  const dayIncome = days.map(d=>payments.filter(p=>p.date===d).reduce((s,p)=>s+Number(p.amount||0),0));
-  const dayExpense = days.map(d=>expenses.filter(e=>e.date===d).reduce((s,e)=>s+Number(e.amount||0),0));
+  const receivableIds = new Set(parties.filter(p=>!isPayable(p)).map(p=>p.id));
+  const payableIds = new Set(parties.filter(p=>isPayable(p)).map(p=>p.id));
+  // Cash IN = sirf receivable parties se aayi qist payments (asal recovery).
+  // Cash OUT = kharcha + payable parties ko ki gayi adaiygi (dono hi paisa
+  // bahar ja raha hai — "mujhe dena hai" ki payment ek payout hai, income
+  // nahi, jo pehle ghalti se yahan "income" mein shamil ho rahi thi).
+  const dayIncome = days.map(d=>payments.filter(p=>p.date===d && receivableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0));
+  const dayExpense = days.map(d=>{
+    const kharcha = expenses.filter(e=>e.date===d).reduce((s,e)=>s+Number(e.amount||0),0);
+    const payouts = payments.filter(p=>p.date===d && payableIds.has(p.partyId)).reduce((s,p)=>s+Number(p.amount||0),0);
+    return kharcha + payouts;
+  });
   const weekIncomeTotal = dayIncome.reduce((a,b)=>a+b,0);
   const weekExpenseTotal = dayExpense.reduce((a,b)=>a+b,0);
   const elI = document.getElementById('statWeekIncome'); if(elI) elI.textContent = fmtMoney(weekIncomeTotal);
   const elE = document.getElementById('statWeekExpense'); if(elE) elE.textContent = fmtMoney(weekExpenseTotal);
+  const net = weekIncomeTotal - weekExpenseTotal;
+  const elN = document.getElementById('statWeekNet');
+  if(elN){ elN.textContent = (net<0?'- ':'') + fmtMoney(Math.abs(net)); elN.style.color = net<0 ? 'var(--brick)' : 'var(--teal)'; }
   const maxVal = Math.max(1, ...dayIncome, ...dayExpense);
   chart.innerHTML = days.map((d,i)=>{
     const hIn = Math.max(2, Math.round(dayIncome[i]/maxVal*100));
     const hEx = Math.max(2, Math.round(dayExpense[i]/maxVal*100));
     return `<div style="flex:1; display:flex; gap:2px; align-items:flex-end; height:100px;">
-      <div style="flex:1; height:${hIn}px; background:var(--teal); border-radius:3px 3px 0 0;" title="Recovery: ${fmtMoney(dayIncome[i])}"></div>
-      <div style="flex:1; height:${hEx}px; background:var(--brick); border-radius:3px 3px 0 0;" title="Kharcha: ${fmtMoney(dayExpense[i])}"></div>
+      <div style="flex:1; height:${hIn}px; background:var(--teal); border-radius:3px 3px 0 0;" title="Cash In: ${fmtMoney(dayIncome[i])}"></div>
+      <div style="flex:1; height:${hEx}px; background:var(--brick); border-radius:3px 3px 0 0;" title="Cash Out: ${fmtMoney(dayExpense[i])}"></div>
     </div>`;
   }).join('');
   labels.innerHTML = days.map(d=>`<div style="flex:1;">${d.slice(5)}</div>`).join('');
@@ -2795,6 +2956,7 @@ const BACKUP_REMIND_KEY = 'guli_shop_last_backup_reminder';
 const BACKUP_DONE_KEY = 'guli_shop_last_backup_done';
 loadLocal();
 document.getElementById('reportDate').value = todayStr();
+document.getElementById('reportDateTo').value = todayStr();
 renderAll();
 checkDueReminders(); // sirf tab notify karta hai jab permission pehle se granted ho — koi extra popup nahi
 
