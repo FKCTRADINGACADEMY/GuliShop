@@ -25,7 +25,7 @@
   .wrap{max-width:480px; margin:0 auto; padding-bottom:80px;}
   h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
   .mono{font-family:'JetBrains Mono',monospace;}
-  header{position:sticky; top:0; z-index:20; background:var(--paper); border-bottom:1px solid var(--line);}
+  header{position:sticky; top:0; z-index:20; background:rgba(247,242,231,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); box-shadow:0 2px 10px rgba(28,43,36,.04);}
   header .inner{max-width:480px; margin:0 auto; padding:16px; display:flex; align-items:center; gap:12px;}
   header img{width:44px; height:44px; border-radius:10px; object-fit:cover;}
   header .brand{flex:1;}
@@ -35,7 +35,7 @@
   .content{padding:16px;}
   .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:50; background:var(--teal); color:var(--paper); padding:8px 16px; border-radius:999px; font-size:13px; box-shadow:0 6px 16px rgba(0,0,0,.15); display:none;}
   .toast.error{background:var(--brick);}
-  .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; box-shadow:0 2px 8px rgba(28,43,36,.04);}
   .vc-card{border-radius:16px; padding:24px 20px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,.18); position:relative; overflow:hidden;}
   .vc-logo{width:52px; height:52px; border-radius:12px; object-fit:cover; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,.3); background:#fff; padding:4px; position:relative; z-index:1;}
   .vc-card .vc-name{font-family:'Fraunces',serif; font-weight:700; font-size:20px; position:relative; z-index:1;}
@@ -110,15 +110,17 @@
   input,select{width:100%; border:1px solid var(--line); border-radius:8px; padding:9px 10px; font-size:14px; background:#fff; font-family:inherit; outline:none;}
   label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.04em; opacity:.6; margin-bottom:4px;}
   .field{margin-bottom:10px;}
-  .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; border-radius:10px; padding:11px 14px; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none;}
-  .btn-teal{background:var(--teal); color:var(--paper);}
-  .btn-gold{background:var(--gold); color:var(--ink);}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; border-radius:10px; padding:11px 14px; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; transition:transform .08s ease, box-shadow .08s ease;}
+  .btn:active{transform:scale(.97);}
+  .btn-teal{background:var(--teal); color:var(--paper); box-shadow:0 4px 10px rgba(14,92,76,.25);}
+  .btn-gold{background:var(--gold); color:var(--ink); box-shadow:0 4px 10px rgba(199,154,62,.3);}
   .btn-outline{background:transparent; border:1px solid var(--line); color:var(--ink);}
   .btn-outline-teal{background:transparent; border:1px solid var(--teal); color:var(--teal);}
   .btn-block{width:100%;}
   .btn-sm{padding:7px 10px; font-size:12px; border-radius:8px;}
   .row-between{display:flex; align-items:center; justify-content:space-between; gap:8px;}
-  .party-item{background:#fff; border:1px solid var(--line); border-radius:12px; padding:13px; margin-bottom:8px; cursor:pointer;}
+  .party-item{background:#fff; border:1px solid var(--line); border-radius:12px; padding:13px; margin-bottom:8px; cursor:pointer; box-shadow:0 2px 6px rgba(28,43,36,.04); transition:transform .1s ease;}
+  .party-item:active{transform:scale(.985);}
   .party-item .pname{font-weight:600; font-size:14px;}
   .party-item .pmeta{font-size:12px; opacity:.6; margin-top:2px;}
   .stamp{font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; border:2px solid; text-transform:uppercase; letter-spacing:.04em; transform:rotate(-6deg); display:inline-block; white-space:nowrap;}
@@ -152,6 +154,7 @@
   .filter-chip{flex:0 0 auto; padding:7px 14px; border-radius:999px; font-size:12px; font-weight:600; border:1px solid var(--line); background:#fff; cursor:pointer; white-space:nowrap;}
   .filter-chip.active{background:var(--teal); color:var(--paper); border-color:var(--teal);}
   .filter-chip[data-f="payable"].active{background:var(--gold); border-color:var(--gold); color:#3a2a05;}
+  .filter-chip[data-f="overdue"].active{background:var(--brick); border-color:var(--brick); color:#fff;}
 
   /* ---- Hamburger + sidebar drawer ---- */
   .hamburger-btn{background:none; border:1px solid var(--line); border-radius:10px; width:38px; height:38px; font-size:16px; cursor:pointer; flex-shrink:0;}
@@ -207,30 +210,35 @@
   /* ===================== LOGIN / LOCK SCREEN ===================== */
   #loginScreen{
     position:fixed; inset:0; z-index:100;
-    background: linear-gradient(180deg, rgba(14,92,76,.14), rgba(14,92,76,.55)), var(--login-bg) center/cover no-repeat, var(--teal);
+    background: radial-gradient(circle at 20% -10%, rgba(199,154,62,.35), transparent 50%), linear-gradient(180deg, rgba(14,92,76,.2), rgba(6,37,29,.72)), var(--login-bg) center/cover no-repeat, var(--teal);
     display:flex; align-items:center; justify-content:center; padding:20px;
   }
   #loginScreen.hidden{ display:none; }
   .login-card{
-    width:100%; max-width:360px; background:rgba(247,242,231,.97); border-radius:22px;
-    padding:26px 22px 22px; box-shadow:0 18px 50px rgba(0,0,0,.35); text-align:center;
-    animation: loginPop .35s ease;
+    width:100%; max-width:360px; background:rgba(247,242,231,.97); border-radius:26px;
+    padding:30px 24px 24px; box-shadow:0 24px 60px rgba(0,0,0,.4), 0 2px 0 rgba(255,255,255,.5) inset;
+    text-align:center; border:1px solid rgba(255,255,255,.4);
+    animation: loginPop .4s cubic-bezier(.2,.8,.3,1);
   }
-  @keyframes loginPop{ from{ opacity:0; transform:translateY(14px) scale(.98);} to{ opacity:1; transform:translateY(0) scale(1);} }
-  .login-logo{ width:78px; height:78px; border-radius:18px; object-fit:cover; box-shadow:0 6px 16px rgba(0,0,0,.18); margin-bottom:10px; }
-  .login-title{ font-family:'Fraunces',serif; font-weight:700; font-size:22px; }
-  .login-sub{ font-size:11px; color:var(--teal); font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-top:2px; margin-bottom:18px; }
+  @keyframes loginPop{ from{ opacity:0; transform:translateY(18px) scale(.96);} to{ opacity:1; transform:translateY(0) scale(1);} }
+  .login-logo-ring{ width:92px; height:92px; border-radius:24px; margin:0 auto 12px; padding:4px; background:linear-gradient(135deg, var(--gold), var(--teal)); box-shadow:0 10px 24px rgba(14,92,76,.3); }
+  .login-logo{ width:100%; height:100%; border-radius:20px; object-fit:cover; display:block; background:#fff; }
+  .login-title{ font-family:'Fraunces',serif; font-weight:700; font-size:24px; letter-spacing:-.01em; }
+  .login-sub{ font-size:10.5px; color:var(--teal); font-weight:700; text-transform:uppercase; letter-spacing:.09em; margin-top:4px; }
+  .login-divider{ width:36px; height:3px; border-radius:3px; background:linear-gradient(90deg, var(--gold), var(--teal)); margin:14px auto 18px; }
   .login-card .field{ text-align:left; }
   .login-card input{ text-align:center; letter-spacing:.12em; font-size:16px; }
-  .pin-dots{ display:flex; justify-content:center; gap:10px; margin:14px 0 16px; }
-  .pin-dots span{ width:13px; height:13px; border-radius:50%; border:2px solid var(--teal); background:transparent; transition:background .15s; }
-  .pin-dots span.filled{ background:var(--teal); }
+  .login-text-input{ letter-spacing:normal !important; text-align:left !important; width:100%; padding:12px 13px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:14px; }
+  .login-text-input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(14,92,76,.12); }
+  .pin-dots{ display:flex; justify-content:center; gap:12px; margin:16px 0 18px; }
+  .pin-dots span{ width:14px; height:14px; border-radius:50%; border:2px solid var(--teal); background:transparent; transition:all .18s ease; }
+  .pin-dots span.filled{ background:var(--teal); box-shadow:0 0 0 5px rgba(14,92,76,.15); transform:scale(1.08); }
   .login-error{ color:var(--brick); font-size:12px; min-height:16px; margin-bottom:8px; font-weight:600; }
-  .login-hint{ font-size:11px; opacity:.55; margin-top:14px; line-height:1.6; }
+  .login-hint{ font-size:11px; opacity:.55; margin-top:16px; line-height:1.6; }
   .login-link{ background:none; border:none; color:var(--teal); font-size:12px; font-weight:700; cursor:pointer; text-decoration:underline; padding:6px; }
-  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:6px 0 14px; }
-  .keypad button{ padding:14px 0; font-size:18px; font-weight:700; border-radius:12px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
-  .keypad button:active{ background:var(--paper-dark); }
+  .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:11px; margin:6px 0 14px; }
+  .keypad button{ padding:15px 0; font-size:19px; font-weight:700; border-radius:14px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; box-shadow:0 2px 5px rgba(28,43,36,.06); transition:transform .08s ease, box-shadow .08s ease; }
+  .keypad button:active{ background:var(--paper-dark); transform:scale(.94); box-shadow:none; }
   .keypad button.wide{ font-size:13px; font-weight:600; }
   #lockBtn{ background:none; border:none; cursor:pointer; opacity:.55; font-size:18px; padding:4px; }
   #lockBtn:hover{ opacity:1; }
@@ -245,18 +253,19 @@
 <!-- ===================== LOGIN / LOCK SCREEN ===================== -->
 <div id="loginScreen">
   <div class="login-card">
-    <img class="login-logo" id="loginLogo" alt="Guli Shop">
+    <div class="login-logo-ring"><img class="login-logo" id="loginLogo" alt="Guli Shop"></div>
     <div class="login-title">Guli Shop</div>
     <div class="login-sub">Easy Shopping, Easy Installments</div>
+    <div class="login-divider"></div>
 
     <!-- FIREBASE ACCOUNT LOGIN (shown once per device, before PIN) -->
     <div id="loginFirebase" style="display:none;">
-      <div style="font-size:13px; font-weight:600; margin-bottom:10px;">Apna account email/password se login karein</div>
-      <div class="field" style="text-align:left; margin-bottom:8px;">
-        <input id="fbEmail" type="email" autocomplete="username" style="letter-spacing:normal; text-align:left; width:100%; padding:10px; border-radius:10px; border:1px solid var(--line);" placeholder="Email">
+      <div style="font-size:13px; font-weight:600; margin-bottom:12px;">Apna account email/password se login karein</div>
+      <div class="field" style="text-align:left; margin-bottom:10px;">
+        <input id="fbEmail" type="email" autocomplete="username" class="login-text-input" placeholder="Email">
       </div>
       <div class="field" style="text-align:left; margin-bottom:8px;">
-        <input id="fbPassword" type="password" autocomplete="current-password" style="letter-spacing:normal; text-align:left; width:100%; padding:10px; border-radius:10px; border:1px solid var(--line);" placeholder="Password">
+        <input id="fbPassword" type="password" autocomplete="current-password" class="login-text-input" placeholder="Password">
       </div>
       <div class="login-error" id="fbError"></div>
       <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="firebaseLogin()">Login Karein</button>
@@ -388,6 +397,7 @@
         <button type="button" class="filter-chip active" data-f="all" onclick="setPartyFilter('all')">Sub</button>
         <button type="button" class="filter-chip" data-f="receivable" onclick="setPartyFilter('receivable')">📌 Mujhe Lena Hai</button>
         <button type="button" class="filter-chip" data-f="payable" onclick="setPartyFilter('payable')">🤝 Mujhe Dena Hai</button>
+        <button type="button" class="filter-chip" data-f="overdue" onclick="setPartyFilter('overdue')">⏰ Overdue</button>
       </div>
       <div class="searchbar">
         <input id="partySearch" placeholder="Naam, number ya item dhoondein" oninput="renderPartiesList()">
@@ -2501,9 +2511,16 @@ function renderDashboard(){
 /* ===================== RENDER: PARTIES LIST ===================== */
 function renderPartiesList(){
   const q = (document.getElementById('partySearch').value||'').trim().toLowerCase();
+  const today = todayStr();
   const filtered = parties.filter(p=>{
     if(partyListFilter==='receivable' && isPayable(p)) return false;
     if(partyListFilter==='payable' && !isPayable(p)) return false;
+    if(partyListFilter==='overdue'){
+      const b = partyBalance(p.id);
+      if(b.balance<=0) return false;
+      const grace = graceDueDate(computeNextDue(p));
+      if(grace >= today) return false;
+    }
     if(!q) return true;
     return p.name.toLowerCase().includes(q) || (p.phone||'').includes(q) || (p.item||'').toLowerCase().includes(q);
   });
@@ -2511,6 +2528,7 @@ function renderPartiesList(){
   if(filtered.length===0){
     const emptyMsg = partyListFilter==='payable' ? 'Koi party nahi jinhe dena hai.'
       : partyListFilter==='receivable' ? 'Koi party nahi jinse lena hai.'
+      : partyListFilter==='overdue' ? 'Koi party overdue nahi — sub theek waqt par hai.'
       : 'Koi party nahi mili. Nayi party judiye.';
     box.innerHTML = `<div class="empty">${emptyMsg}</div>`;
     return;
