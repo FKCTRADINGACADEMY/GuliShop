@@ -64,10 +64,6 @@
   .greet-theme-newyear{background:linear-gradient(150deg, #1b3a6b, #06132b); color:#fff;}
   .greet-theme-azadi{background:linear-gradient(150deg, #0a6e3a, #063d20); color:#fff;}
   .greet-theme-thankyou{background:linear-gradient(150deg, #b8860b, #7a5a0a); color:#fff;}
-  .greet-theme-milad{background:linear-gradient(150deg, #6b2d5c, #2a0f24); color:#fff;}
-  .greet-theme-eid_adha{background:linear-gradient(150deg, #1a5f4a, #0a2e24); color:#fff;}
-  .greet-theme-pakistan{background:linear-gradient(150deg, #01411C, #002910); color:#fff;}
-  .greet-auto-badge{font-size:11px; background:rgba(14,92,76,.12); color:var(--teal); border:1px solid rgba(14,92,76,.25); border-radius:999px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; margin-bottom:10px; font-weight:600;}
   .card.dashed{border-style:dashed;}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .stat-label{font-size:10px; text-transform:uppercase; letter-spacing:.05em; opacity:.6;}
@@ -543,16 +539,12 @@
 
       <div class="card">
         <div style="font-weight:600; font-size:14px; margin-bottom:10px;">🎉 Greetings</div>
-        <div id="greetAutoBadge" class="greet-auto-badge" style="display:none;">✨ Aaj ka event auto-select ho gaya</div>
-        <select id="greetingSelect" class="field-input" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--line); margin-bottom:12px;" onchange="onGreetingManualChange()">
+        <select id="greetingSelect" class="field-input" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--line); margin-bottom:12px;" onchange="renderGreeting()">
           <option value="thankyou">Thank You for Business</option>
-          <option value="milad">12 Rabi-ul-Awwal (Eid Milad-un-Nabi)</option>
-          <option value="eid">Eid-ul-Fitr Mubarak</option>
-          <option value="eid_adha">Eid-ul-Adha Mubarak</option>
+          <option value="eid">Eid Mubarak</option>
           <option value="ramzan">Ramzan Mubarak</option>
           <option value="newyear">New Year Mubarak</option>
           <option value="azadi">Jashn-e-Azadi (14 August)</option>
-          <option value="pakistan">Pakistan Day (23 March)</option>
         </select>
         <div id="greetingPreview" class="greet-card greet-theme-thankyou">
           <div class="greet-logo-wrap"><img id="grLogo" alt=""></div>
@@ -1585,78 +1577,15 @@ function downloadVisitCard(){
   }).catch(()=>{ showToast('There was a problem creating the image', 'error'); });
 }
 
-/* ===================== GREETINGS (auto event-based) ===================== */
+/* ===================== GREETINGS ===================== */
 const GREETINGS = {
   thankyou: { title: 'Thank You!', sub: 'Aap ke business ke liye shukriya', theme:'thankyou' },
-  milad:    { title: '12 Rabi-ul-Awwal', sub: 'Eid Milad-un-Nabi ﷺ — Aap sab ko mubarakbaad', theme:'milad' },
-  eid:      { title: 'Eid-ul-Fitr Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad', theme:'eid' },
-  eid_adha: { title: 'Eid-ul-Adha Mubarak', sub: 'Qurbani ke din ki khushiyan aap ke ghar mein', theme:'eid_adha' },
-  ramzan:   { title: 'Ramzan Mubarak', sub: 'Is mubarak mahine ki barkatein aap par', theme:'ramzan' },
-  newyear:  { title: 'New Year Mubarak', sub: 'Naya saal khushiyan aur barakat laaye', theme:'newyear' },
-  azadi:    { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad', theme:'azadi' },
-  pakistan: { title: 'Pakistan Day', sub: '23 March — Pakistan Paindabad', theme:'pakistan' }
+  eid: { title: 'Eid Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad', theme:'eid' },
+  ramzan: { title: 'Ramzan Mubarak', sub: 'May this month bring you blessings', theme:'ramzan' },
+  newyear: { title: 'New Year Mubarak', sub: 'May the new year bring you happiness', theme:'newyear' },
+  azadi: { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad', theme:'azadi' }
 };
-const GREET_THEMES = ['thankyou','milad','eid','eid_adha','ramzan','newyear','azadi','pakistan'];
-
-/* Fixed national days + approximate Islamic windows (moon can shift ±1–2 days).
-   Window: event se 10 din pehle se 3 din baad tak auto-select. */
-const OCCASION_WINDOWS = [
-  // 12 Rabi-ul-Awwal / Eid Milad-un-Nabi (Pakistan 2026: ~26 Aug)
-  { key:'milad',    from:'2026-08-16', to:'2026-08-29', label:'12 Rabi-ul-Awwal (Eid Milad-un-Nabi)' },
-  { key:'milad',    from:'2027-08-05', to:'2027-08-18', label:'12 Rabi-ul-Awwal (Eid Milad-un-Nabi)' },
-  // Ramzan (approx)
-  { key:'ramzan',   from:'2026-02-10', to:'2026-03-22', label:'Ramzan Mubarak' },
-  { key:'ramzan',   from:'2027-01-30', to:'2027-03-12', label:'Ramzan Mubarak' },
-  // Eid-ul-Fitr
-  { key:'eid',      from:'2026-03-18', to:'2026-03-25', label:'Eid-ul-Fitr' },
-  { key:'eid',      from:'2027-03-08', to:'2027-03-15', label:'Eid-ul-Fitr' },
-  // Eid-ul-Adha
-  { key:'eid_adha', from:'2026-05-24', to:'2026-06-02', label:'Eid-ul-Adha' },
-  { key:'eid_adha', from:'2027-05-14', to:'2027-05-22', label:'Eid-ul-Adha' },
-  // National (same every year)
-  { key:'azadi',    from:'2026-08-10', to:'2026-08-16', label:'Jashn-e-Azadi' },
-  { key:'azadi',    from:'2027-08-10', to:'2027-08-16', label:'Jashn-e-Azadi' },
-  { key:'pakistan', from:'2026-03-20', to:'2026-03-25', label:'Pakistan Day' },
-  { key:'pakistan', from:'2027-03-20', to:'2027-03-25', label:'Pakistan Day' },
-  { key:'newyear',  from:'2025-12-28', to:'2026-01-05', label:'New Year' },
-  { key:'newyear',  from:'2026-12-28', to:'2027-01-05', label:'New Year' }
-];
-
-function detectCurrentOccasion(){
-  const today = todayStr();
-  // Priority: first matching window (list is ordered roughly by importance when overlapping)
-  for(const w of OCCASION_WINDOWS){
-    if(today >= w.from && today <= w.to) return w;
-  }
-  return null;
-}
-
-let greetingManualOverride = false;
-function onGreetingManualChange(){
-  greetingManualOverride = true;
-  const badge = document.getElementById('greetAutoBadge');
-  if(badge) badge.style.display = 'none';
-  renderGreeting();
-}
-function autoSelectGreeting(){
-  const sel = document.getElementById('greetingSelect');
-  if(!sel) return;
-  if(greetingManualOverride){ renderGreeting(); return; }
-  const occ = detectCurrentOccasion();
-  const badge = document.getElementById('greetAutoBadge');
-  if(occ){
-    sel.value = occ.key;
-    if(badge){
-      badge.style.display = 'inline-flex';
-      badge.textContent = '✨ Auto: ' + occ.label;
-    }
-  } else {
-    // No special event — default Thank You
-    if(!sel.value || !GREETINGS[sel.value]) sel.value = 'thankyou';
-    if(badge) badge.style.display = 'none';
-  }
-  renderGreeting();
-}
+const GREET_THEMES = ['thankyou','eid','ramzan','newyear','azadi'];
 function renderGreeting(){
   const headerImg = document.querySelector('header .inner img');
   const grLogo = document.getElementById('grLogo');
@@ -2327,7 +2256,7 @@ function showView(name){
   if(name==='parties') renderPartiesList();
   if(name==='reports') renderReports();
   if(name==='backup') renderBackup();
-  if(name==='cards'){ renderVisitCard(); autoSelectGreeting(); }
+  if(name==='cards'){ renderVisitCard(); renderGreeting(); }
   if(name==='calculator'){ qistCalc(); }
   if(name==='stock') renderStockList();
   if(name==='kharcha') renderKharchaList();
@@ -3531,10 +3460,36 @@ function setupInactivityWatch(){
 
 document.addEventListener('DOMContentLoaded', initAuth);
 
-/* ---- PWA: register service worker (offline cache + installable app) ---- */
+/* ---- PWA: register service worker (offline cache + installable app) ----
+   Auto-detects a newer version every ~3 seconds and activates + reloads
+   immediately, instead of waiting for the app to be closed and reopened. */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(err=>console.warn('SW register failed:', err));
+    navigator.serviceWorker.register('sw.js').then((reg)=>{
+      reg.update().catch(()=>{});
+      setInterval(()=>reg.update().catch(()=>{}), 3*1000);
+
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState === 'visible') reg.update().catch(()=>{});
+      });
+
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            newWorker.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+    }).catch(err=>console.warn('SW register failed:', err));
+
+    let refreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(refreshed) return;
+      refreshed = true;
+      window.location.reload();
+    });
   });
 }
 </script>
