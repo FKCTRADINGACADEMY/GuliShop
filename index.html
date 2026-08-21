@@ -340,8 +340,8 @@
   </div>
   <div class="sidebar-section-label">Parties (Jaldi Dekhein)</div>
   <div class="sidebar-link" onclick="goToPartiesFilter('all')"><span class="sl-icon">👥</span> All Parties <span class="sl-badge" id="sbAllCount">0</span></div>
-  <div class="sidebar-link" onclick="goToPartiesFilter('receivable')"><span class="sl-icon">📌</span> I'm Owed <span class="sl-badge" id="sbReceivableCount">0</span></div>
-  <div class="sidebar-link" onclick="goToPartiesFilter('payable')"><span class="sl-icon">🤝</span> I Owe <span class="sl-badge" id="sbPayableCount">0</span></div>
+  <div class="sidebar-link" onclick="goToPartiesFilter('receivable')"><span class="sl-icon">📌</span> You'll Get <span class="sl-badge" id="sbReceivableCount">0</span></div>
+  <div class="sidebar-link" onclick="goToPartiesFilter('payable')"><span class="sl-icon">🤝</span> You'll Give <span class="sl-badge" id="sbPayableCount">0</span></div>
   <div class="sidebar-section-label">More Features</div>
   <div class="sidebar-link" onclick="sidebarNav('stock')"><span class="sl-icon">📦</span> Stock</div>
   <div class="sidebar-link" onclick="sidebarNav('kharcha')"><span class="sl-icon">💸</span> Kharcha</div>
@@ -360,7 +360,7 @@
       <div class="dash-hero" onclick="toggleBalanceVisibility()">
         <div class="dash-hero-top">
           <div>
-            <div class="dash-hero-label">Today's Recovery</div>
+            <div class="dash-hero-label">Total Payment (Receivable)</div>
             <div class="dash-hero-amount mono" id="statToday">Rs. 0</div>
           </div>
           <button id="balanceToggleBtn" onclick="event.stopPropagation(); toggleBalanceVisibility()" title="Balance chupayein/dikhayein" class="dash-eye-btn">👁</button>
@@ -368,7 +368,7 @@
         <div class="dash-sync-pill" id="dashSyncPill"><span class="dash-sync-dot"></span><span id="dashSyncText">Sync ho raha hai…</span></div>
       </div>
       <div class="stat-grid">
-        <div class="stat-card" onclick="goToPartiesFilter('receivable')" style="--sc-accent:var(--brick);"><span class="stat-icon">📌</span><div class="stat-label">Total Outstanding</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
+        <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--brick);"><span class="stat-icon">📌</span><div class="stat-label">Today's Recovery</div><div class="stat-value mono" id="statOutstanding" style="color:var(--brick);">Rs. 0</div></div>
         <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--gold);"><span class="stat-icon">💰</span><div class="stat-label">This Month's Recovery</div><div class="stat-value mono" id="statCollected" style="color:var(--gold);">Rs. 0</div></div>
         <div class="stat-card" onclick="toggleBalanceVisibility()" style="--sc-accent:var(--brick);"><span class="stat-icon">🏗️</span><div class="stat-label">Total Investment</div><div class="stat-value mono" id="statInvestment" style="color:var(--brick);">Rs. 0</div></div>
         <div class="stat-card" onclick="goToPartiesFilter('all')" style="--sc-accent:var(--teal);"><span class="stat-icon">👥</span><div class="stat-label">Active Parties</div><div class="stat-value mono" id="statActive">0</div></div>
@@ -440,8 +440,8 @@
     <div class="view" id="view-parties">
       <div class="filter-chip-row" id="partyFilterRow">
         <button type="button" class="filter-chip active" data-f="all" onclick="setPartyFilter('all')">Sub</button>
-        <button type="button" class="filter-chip" data-f="receivable" onclick="setPartyFilter('receivable')">📌 I'm Owed</button>
-        <button type="button" class="filter-chip" data-f="payable" onclick="setPartyFilter('payable')">🤝 I Owe</button>
+        <button type="button" class="filter-chip" data-f="receivable" onclick="setPartyFilter('receivable')">📌 You'll Get</button>
+        <button type="button" class="filter-chip" data-f="payable" onclick="setPartyFilter('payable')">🤝 You'll Give</button>
         <button type="button" class="filter-chip" data-f="overdue" onclick="setPartyFilter('overdue')">⏰ Overdue</button>
         <button type="button" class="filter-chip" data-f="atrisk" onclick="setPartyFilter('atrisk')">🚩 At Risk</button>
       </div>
@@ -706,6 +706,8 @@
   <div class="inner">
     <button data-tab="dashboard" onclick="showView('dashboard')">📊<span>Dashboard</span></button>
     <button data-tab="parties" onclick="goToPartiesFilter('all')">👥<span>Parties</span></button>
+    <button data-tab="reports" onclick="showView('reports')">📄<span>Report</span></button>
+    <button data-tab="calculator" onclick="showView('calculator')">🧮<span>Calculator</span></button>
     <button data-tab="more" onclick="openSidebar()">☰<span>Menu</span></button>
   </div>
 </nav>
@@ -719,8 +721,8 @@
     </div>
     <div class="field"><label>Type</label>
       <div class="method-row" id="npTypeRow" style="margin:0 0 4px;">
-        <button type="button" class="method-btn active" data-t="receivable" onclick="selectPartyType(this)">📥 I'm Owed</button>
-        <button type="button" class="method-btn" data-t="payable" onclick="selectPartyType(this)">📤 I Owe</button>
+        <button type="button" class="method-btn active" data-t="receivable" onclick="selectPartyType(this)">📥 You'll Get</button>
+        <button type="button" class="method-btn" data-t="payable" onclick="selectPartyType(this)">📤 You'll Give</button>
       </div>
     </div>
     <div class="field"><label>Name *</label><input id="npName"></div>
@@ -2688,8 +2690,8 @@ function renderMonthlyCharts(){
 function renderDashboard(){
   const t = computeTotals();
   updateBalanceToggleIcon();
-  document.getElementById('statToday').textContent = maskMoney(fmtMoney(t.todayCollection));
-  document.getElementById('statOutstanding').textContent = maskMoney(fmtMoney(t.totalOutstanding));
+  document.getElementById('statToday').textContent = maskMoney(fmtMoney(t.totalOutstanding));
+  document.getElementById('statOutstanding').textContent = maskMoney(fmtMoney(t.todayCollection));
   document.getElementById('statCollected').textContent = maskMoney(fmtMoney(t.totalCollectedThisMonth));
   document.getElementById('statInvestment').textContent = maskMoney(fmtMoney(t.totalInvestment));
   document.getElementById('statActive').textContent = t.activeParties;
