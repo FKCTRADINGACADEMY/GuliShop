@@ -64,6 +64,10 @@
   .greet-theme-newyear{background:linear-gradient(150deg, #1b3a6b, #06132b); color:#fff;}
   .greet-theme-azadi{background:linear-gradient(150deg, #0a6e3a, #063d20); color:#fff;}
   .greet-theme-thankyou{background:linear-gradient(150deg, #b8860b, #7a5a0a); color:#fff;}
+  .greet-theme-milad{background:linear-gradient(150deg, #6b2d5c, #2a0f24); color:#fff;}
+  .greet-theme-eid_adha{background:linear-gradient(150deg, #1a5f4a, #0a2e24); color:#fff;}
+  .greet-theme-pakistan{background:linear-gradient(150deg, #01411C, #002910); color:#fff;}
+  .greet-auto-badge{font-size:11px; background:rgba(14,92,76,.12); color:var(--teal); border:1px solid rgba(14,92,76,.25); border-radius:999px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; margin-bottom:10px; font-weight:600;}
   .card.dashed{border-style:dashed;}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .stat-label{font-size:10px; text-transform:uppercase; letter-spacing:.05em; opacity:.6;}
@@ -193,13 +197,15 @@
   #cardReceipt .cr-box .cr-line.total, #invoiceReceipt .cr-box .cr-line.total{color:#1e6f5c; font-weight:700;}
   #invoiceReceipt .cr-box .cr-line.sub{border-top:1px dashed #e4ddcf; margin-top:4px; padding-top:8px;}
   #cardReceipt .cr-desc, #invoiceReceipt .cr-desc{font-size:11.5px; margin-top:10px;}
-  #cardReceipt .cr-sign, #invoiceReceipt .cr-sign{margin-top:16px; float:right; text-align:center; border:1px solid #e4ddcf; border-radius:10px; padding:8px 16px 6px;}
-  #cardReceipt .cr-sign .cr-scribble, #invoiceReceipt .cr-sign .cr-scribble{display:block; margin:0 auto 2px;}
+  #cardReceipt .cr-sign-wrap, #invoiceReceipt .cr-sign-wrap{margin-top:16px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px;}
+  #cardReceipt .cr-sign-stamp, #invoiceReceipt .cr-sign-stamp{width:72px; height:72px; border-radius:50%; object-fit:cover; opacity:.95; transform:rotate(-8deg); flex-shrink:0; mix-blend-mode:multiply; background:transparent;}
+  #cardReceipt .cr-sign, #invoiceReceipt .cr-sign{text-align:center; border:1px solid #e4ddcf; border-radius:10px; padding:8px 16px 6px; margin-left:auto;}
+  #cardReceipt .cr-sign .cr-scribble, #invoiceReceipt .cr-sign .cr-scribble{display:block; margin:0 auto 2px; width:80px !important; height:auto;}
   #cardReceipt .cr-sign .cr-shopname, #invoiceReceipt .cr-sign .cr-shopname{font-size:10px; opacity:.6; border-top:1px solid #cbbfa0; padding-top:4px; margin-top:2px;}
   #cardReceipt .cr-clear, #invoiceReceipt .cr-clear{clear:both;}
   #cardReceipt .cr-note, #invoiceReceipt .cr-note{font-size:10.5px; color:#8a4a1f; background:#fbeee0; border:1px dashed #d9a66c; border-radius:8px; padding:6px 8px; margin-top:10px;}
   #cardReceipt .cr-footer, #invoiceReceipt .cr-footer{margin-top:16px; padding-top:10px; border-top:1px dashed #e4ddcf; display:flex; flex-direction:column; align-items:center; gap:4px;}
-  #cardReceipt .cr-stamp, #invoiceReceipt .cr-stamp{width:56px; height:56px; object-fit:cover; border-radius:50%; opacity:.82; transform:rotate(-8deg); box-shadow:0 0 0 2px rgba(30,111,92,.35);}
+  #cardReceipt .cr-stamp, #invoiceReceipt .cr-stamp{width:56px; height:56px; object-fit:cover; border-radius:50%; opacity:.82; transform:rotate(-8deg); mix-blend-mode:multiply; background:transparent;}
   #cardReceipt .cr-credit, #invoiceReceipt .cr-credit{font-size:9.5px; opacity:.45; text-align:center;}
   #invoiceReceipt .cr-inv-table{width:100%; border-collapse:collapse; font-size:12px; margin-top:4px;}
   #invoiceReceipt .cr-inv-table td{padding:5px 0;}
@@ -333,7 +339,7 @@
     <button class="sidebar-close" onclick="closeSidebar()">✕</button>
   </div>
   <div class="sidebar-section-label">Parties (Jaldi Dekhein)</div>
-  <div class="sidebar-link" onclick="goToPartiesFilter('all')"><span class="sl-icon">👥</span> Sub Parties <span class="sl-badge" id="sbAllCount">0</span></div>
+  <div class="sidebar-link" onclick="goToPartiesFilter('all')"><span class="sl-icon">👥</span> All Parties <span class="sl-badge" id="sbAllCount">0</span></div>
   <div class="sidebar-link" onclick="goToPartiesFilter('receivable')"><span class="sl-icon">📌</span> I'm Owed <span class="sl-badge" id="sbReceivableCount">0</span></div>
   <div class="sidebar-link" onclick="goToPartiesFilter('payable')"><span class="sl-icon">🤝</span> I Owe <span class="sl-badge" id="sbPayableCount">0</span></div>
   <div class="sidebar-section-label">More Features</div>
@@ -484,6 +490,12 @@
         <div id="allPartyRows" style="max-height:280px; overflow-y:auto;"></div>
         <button class="btn btn-outline-teal btn-block btn-sm" style="margin-top:10px;" onclick="downloadAllPartyCSV()">⬇ Google Sheet (CSV) Download</button>
       </div>
+
+      <div class="section-title">Party Statements (Vyapar Style)</div>
+      <div class="card">
+        <div style="font-size:12px; opacity:.6; margin-bottom:10px;">Har party ki full statement — PDF / CSV download karein</div>
+        <div id="partyStatementsList" style="max-height:420px; overflow-y:auto;"></div>
+      </div>
     </div>
 
     <!-- BACKUP -->
@@ -498,7 +510,7 @@
       <div class="card">
         <div style="font-weight:600; font-size:13px; margin-bottom:6px;">Manual Backup</div>
         <div style="font-size:11px; opacity:.6; margin-bottom:2px;" id="lastBackupInfo">No email backup done yet</div>
-        <div style="font-size:11px; opacity:.55; margin-bottom:10px;">Email backup: share sheet se <b>Gmail</b> choose karein — file attachment ke sath jayegi. Address: <b class="mono">gulishopinstallment@gmail.com</b></div>
+        <div style="font-size:11px; opacity:.55; margin-bottom:10px;">Email backup: share sheet se <b>Gmail</b> choose karein — file attachment ke sath. Address: <b class="mono">gulishopinstallment@gmail.com</b></div>
         <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="exportJSON()">⬇ Download JSON Backup</button>
         <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" onclick="emailBackupJSON()">✉️ Send Backup via Email</button>
         <button class="btn btn-outline btn-block" onclick="document.getElementById('importFile').click()">⬆ Restore From Backup</button>
@@ -539,12 +551,16 @@
 
       <div class="card">
         <div style="font-weight:600; font-size:14px; margin-bottom:10px;">🎉 Greetings</div>
-        <select id="greetingSelect" class="field-input" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--line); margin-bottom:12px;" onchange="renderGreeting()">
+        <div id="greetAutoBadge" class="greet-auto-badge" style="display:none;">✨ Aaj ka event auto-select ho gaya</div>
+        <select id="greetingSelect" class="field-input" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--line); margin-bottom:12px;" onchange="onGreetingManualChange()">
           <option value="thankyou">Thank You for Business</option>
-          <option value="eid">Eid Mubarak</option>
+          <option value="milad">12 Rabi-ul-Awwal (Eid Milad-un-Nabi)</option>
+          <option value="eid">Eid-ul-Fitr Mubarak</option>
+          <option value="eid_adha">Eid-ul-Adha Mubarak</option>
           <option value="ramzan">Ramzan Mubarak</option>
           <option value="newyear">New Year Mubarak</option>
           <option value="azadi">Jashn-e-Azadi (14 August)</option>
+          <option value="pakistan">Pakistan Day (23 March)</option>
         </select>
         <div id="greetingPreview" class="greet-card greet-theme-thankyou">
           <div class="greet-logo-wrap"><img id="grLogo" alt=""></div>
@@ -860,7 +876,11 @@ function ensureDefaultAccounts(){
 }
 
 function newId(){ return Date.now()*1000 + Math.floor(Math.random()*1000); }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function toLocalDateStr(d){
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + dd;
+}
+function todayStr(){ return toLocalDateStr(new Date()); }
 function fmtMoney(n){ const v = Math.round(Number(n)||0); return 'Rs. ' + v.toLocaleString('en-PK'); }
 function fmtDate(d){
   if(!d) return '-';
@@ -1170,7 +1190,7 @@ function addInterval(dateStr, frequency){
   if(frequency === 'Daily') d.setDate(d.getDate()+1);
   else if(frequency === 'Weekly') d.setDate(d.getDate()+7);
   else d.setMonth(d.getMonth()+1);
-  return d.toISOString().slice(0,10);
+  return toLocalDateStr(d);
 }
 function partyPaymentsSorted(partyId){
   return payments.filter(p=>p.partyId===partyId).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1187,7 +1207,7 @@ const OVERDUE_CHARGE_PERCENT = 5;
 function graceDueDate(dueDate){
   const d = new Date(dueDate + 'T00:00:00');
   d.setDate(d.getDate() + OVERDUE_GRACE_DAYS);
-  return d.toISOString().slice(0,10);
+  return toLocalDateStr(d);
 }
 function buildSchedule(party){
   // Future qist schedule — start date se lekar (total - advance) poora wasool hone tak.
@@ -1577,15 +1597,63 @@ function downloadVisitCard(){
   }).catch(()=>{ showToast('There was a problem creating the image', 'error'); });
 }
 
-/* ===================== GREETINGS ===================== */
+/* ===================== GREETINGS (auto event-based) ===================== */
 const GREETINGS = {
   thankyou: { title: 'Thank You!', sub: 'Aap ke business ke liye shukriya', theme:'thankyou' },
-  eid: { title: 'Eid Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad', theme:'eid' },
-  ramzan: { title: 'Ramzan Mubarak', sub: 'May this month bring you blessings', theme:'ramzan' },
-  newyear: { title: 'New Year Mubarak', sub: 'May the new year bring you happiness', theme:'newyear' },
-  azadi: { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad', theme:'azadi' }
+  milad:    { title: '12 Rabi-ul-Awwal', sub: 'Eid Milad-un-Nabi ﷺ — Aap sab ko mubarakbaad', theme:'milad' },
+  eid:      { title: 'Eid-ul-Fitr Mubarak', sub: 'Aap aur aap ke ghar walon ko Eid ki mubarakbaad', theme:'eid' },
+  eid_adha: { title: 'Eid-ul-Adha Mubarak', sub: 'Qurbani ke din ki khushiyan aap ke ghar mein', theme:'eid_adha' },
+  ramzan:   { title: 'Ramzan Mubarak', sub: 'Is mubarak mahine ki barkatein aap par', theme:'ramzan' },
+  newyear:  { title: 'New Year Mubarak', sub: 'Naya saal khushiyan aur barakat laaye', theme:'newyear' },
+  azadi:    { title: 'Jashn-e-Azadi', sub: '14 August — Pakistan Zindabad', theme:'azadi' },
+  pakistan: { title: 'Pakistan Day', sub: '23 March — Pakistan Paindabad', theme:'pakistan' }
 };
-const GREET_THEMES = ['thankyou','eid','ramzan','newyear','azadi'];
+const GREET_THEMES = ['thankyou','milad','eid','eid_adha','ramzan','newyear','azadi','pakistan'];
+const OCCASION_WINDOWS = [
+  { key:'milad',    from:'2026-08-16', to:'2026-08-29', label:'12 Rabi-ul-Awwal (Eid Milad-un-Nabi)' },
+  { key:'milad',    from:'2027-08-05', to:'2027-08-18', label:'12 Rabi-ul-Awwal (Eid Milad-un-Nabi)' },
+  { key:'ramzan',   from:'2026-02-10', to:'2026-03-22', label:'Ramzan Mubarak' },
+  { key:'ramzan',   from:'2027-01-30', to:'2027-03-12', label:'Ramzan Mubarak' },
+  { key:'eid',      from:'2026-03-18', to:'2026-03-25', label:'Eid-ul-Fitr' },
+  { key:'eid',      from:'2027-03-08', to:'2027-03-15', label:'Eid-ul-Fitr' },
+  { key:'eid_adha', from:'2026-05-24', to:'2026-06-02', label:'Eid-ul-Adha' },
+  { key:'eid_adha', from:'2027-05-14', to:'2027-05-22', label:'Eid-ul-Adha' },
+  { key:'azadi',    from:'2026-08-10', to:'2026-08-16', label:'Jashn-e-Azadi' },
+  { key:'azadi',    from:'2027-08-10', to:'2027-08-16', label:'Jashn-e-Azadi' },
+  { key:'pakistan', from:'2026-03-20', to:'2026-03-25', label:'Pakistan Day' },
+  { key:'pakistan', from:'2027-03-20', to:'2027-03-25', label:'Pakistan Day' },
+  { key:'newyear',  from:'2025-12-28', to:'2026-01-05', label:'New Year' },
+  { key:'newyear',  from:'2026-12-28', to:'2027-01-05', label:'New Year' }
+];
+function detectCurrentOccasion(){
+  const today = todayStr();
+  for(const w of OCCASION_WINDOWS){
+    if(today >= w.from && today <= w.to) return w;
+  }
+  return null;
+}
+let greetingManualOverride = false;
+function onGreetingManualChange(){
+  greetingManualOverride = true;
+  const badge = document.getElementById('greetAutoBadge');
+  if(badge) badge.style.display = 'none';
+  renderGreeting();
+}
+function autoSelectGreeting(){
+  const sel = document.getElementById('greetingSelect');
+  if(!sel) return;
+  if(greetingManualOverride){ renderGreeting(); return; }
+  const occ = detectCurrentOccasion();
+  const badge = document.getElementById('greetAutoBadge');
+  if(occ){
+    sel.value = occ.key;
+    if(badge){ badge.style.display = 'inline-flex'; badge.textContent = '✨ Auto: ' + occ.label; }
+  } else {
+    if(!sel.value || !GREETINGS[sel.value]) sel.value = 'thankyou';
+    if(badge) badge.style.display = 'none';
+  }
+  renderGreeting();
+}
 function renderGreeting(){
   const headerImg = document.querySelector('header .inner img');
   const grLogo = document.getElementById('grLogo');
@@ -1708,14 +1776,16 @@ function buildCardReceiptHTML(partyId, paymentId){
     </div>
     <div class="cr-desc"><b>Transaction Description :</b> received via ${payment?payment.method:'-'}</div>
     ${currentBalance>0 ? `<div class="cr-note">⚠️ Agli qist ki akhri tareekh (grace) se pehle payment na hui to ${OVERDUE_CHARGE_PERCENT}% overdue charges lagenge.</div>` : ''}
-    <div class="cr-sign">
-      ${SIGNATURE_SVG}
-      <div class="cr-shopname">Guli Shop and Installment</div>
+    <div class="cr-sign-wrap">
+      ${logoSrc ? `<img class="cr-sign-stamp" src="${logoSrc}" alt="Guli Shop Stamp">` : '<div></div>'}
+      <div class="cr-sign">
+        ${SIGNATURE_SVG}
+        <div class="cr-shopname">Guli Shop and Installment</div>
+      </div>
     </div>
     <div class="cr-clear"></div>
     <div class="cr-footer">
-      ${logoSrc ? `<img class="cr-stamp" src="${logoSrc}" alt="Guli Shop Stamp">` : ''}
-      <div class="cr-credit">Software By Fazul Khan Chandio</div>
+      <div class="cr-credit">Software By Fazul Khan Chandio — 03333909816</div>
     </div>
   `;
   return div;
@@ -1793,14 +1863,16 @@ function buildInvoiceHTML(partyId){
     </div>
     <div class="cr-desc"><b>Installment Plan:</b> ${count} × ${party.frequency||'Monthly'} qist — ${fmtMoney(party.installmentAmount||0)} har qist</div>
     <div class="cr-note">⚠️ Har qist ki akhri tareekh (grace, due date se ${OVERDUE_GRACE_DAYS} din baad) se pehle payment na hui to ${OVERDUE_CHARGE_PERCENT}% overdue charges lagenge.</div>
-    <div class="cr-sign">
-      ${SIGNATURE_SVG}
-      <div class="cr-shopname">Guli Shop and Installment</div>
+    <div class="cr-sign-wrap">
+      ${logoSrc ? `<img class="cr-sign-stamp" src="${logoSrc}" alt="Guli Shop Stamp">` : '<div></div>'}
+      <div class="cr-sign">
+        ${SIGNATURE_SVG}
+        <div class="cr-shopname">Guli Shop and Installment</div>
+      </div>
     </div>
     <div class="cr-clear"></div>
     <div class="cr-footer">
-      ${logoSrc ? `<img class="cr-stamp" src="${logoSrc}" alt="Guli Shop Stamp">` : ''}
-      <div class="cr-credit">Software By Fazul Khan Chandio</div>
+      <div class="cr-credit">Software By Fazul Khan Chandio — 03333909816</div>
     </div>
   `;
   return div;
@@ -2094,10 +2166,6 @@ function emailBackupJSON(){
   const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments, ' + stock.length + ' stock, ' + expenses.length + ' kharcha (' + todayStr() + ')\n\nTo: ' + BACKUP_EMAIL;
   markBackupDoneToday();
 
-  // Browser mailto: kabhi file attach nahi kar sakta (OS limit).
-  // Strategy: (1) file hamesha download (2) Share sheet se Gmail choose
-  // karein — tab attachment saath jati hai (3) warna mailto + manual attach.
-
   function downloadFile(){
     try{
       const url = URL.createObjectURL(blob);
@@ -2109,38 +2177,25 @@ function emailBackupJSON(){
       setTimeout(()=>{ try{ document.body.removeChild(a); URL.revokeObjectURL(url); }catch(e){} }, 1500);
     }catch(e){}
   }
-
   function tryShareWithFile(){
     try{
       const file = new File([blob], filename, {type:'application/json'});
       if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
         return navigator.share({ files:[file], title:'Guli Shop Backup', text:shareText })
           .then(()=>{ showToast('Share sheet — Gmail choose karein ✅'); return true; })
-          .catch(err=>{
-            if(err && err.name === 'AbortError') return true;
-            return false;
-          });
+          .catch(err=>{ if(err && err.name === 'AbortError') return true; return false; });
       }
     }catch(e){}
     return Promise.resolve(false);
   }
-
   function openMailto(){
     const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
-    const body = encodeURIComponent(
-      shareText +
-      '\n\n---\nFile "' + filename + '" Downloads mein save hai.\n' +
-      'Gmail: 📎 Attach → Downloads → yeh file select karein.\n' +
-      '(Browser khud attachment nahi bhej sakta.)'
-    );
+    const body = encodeURIComponent(shareText + '\n\n---\nFile "' + filename + '" Downloads mein save hai.\nGmail: 📎 Attach → Downloads → yeh file select karein.');
     window.location.href = 'mailto:' + BACKUP_EMAIL + '?subject=' + subject + '&body=' + body;
     showToast('File download ho gayi — email mein 📎 se attach karein');
   }
-
   downloadFile();
-  tryShareWithFile().then(ok=>{
-    if(!ok) setTimeout(openMailto, 400);
-  });
+  tryShareWithFile().then(ok=>{ if(!ok) setTimeout(openMailto, 400); });
 }
 function importJSON(file){
   if(!file) return;
@@ -2268,7 +2323,7 @@ function showView(name){
   if(name==='parties') renderPartiesList();
   if(name==='reports') renderReports();
   if(name==='backup') renderBackup();
-  if(name==='cards'){ renderVisitCard(); renderGreeting(); }
+  if(name==='cards'){ renderVisitCard(); autoSelectGreeting(); }
   if(name==='calculator'){ qistCalc(); }
   if(name==='stock') renderStockList();
   if(name==='kharcha') renderKharchaList();
@@ -2699,11 +2754,16 @@ function renderPartiesList(){
   box.innerHTML = filtered.map(p=>{
     const b = partyBalance(p.id);
     const payable = isPayable(p);
-    let stampHtml;
-    if(b.overpaid>0) stampHtml = `<span class="stamp" style="color:var(--gold); border-color:var(--gold);">Extra ${fmtMoney(b.overpaid)}</span>`;
-    else if(b.balance<=0) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">${payable?'Ada Ho Gaya':'Paid'}</span>`;
-    else if(payable) stampHtml = `<span class="stamp" style="color:var(--teal); border-color:var(--teal);">Dena ${fmtMoney(b.balance)}</span>`;
-    else stampHtml = `<span class="stamp" style="color:var(--brick); border-color:var(--brick);">Outstanding ${fmtMoney(b.balance)}</span>`;
+    let amountHtml;
+    if(b.overpaid>0){
+      amountHtml = `<div style="text-align:right;"><div class="mono" style="font-weight:800; font-size:15px; color:var(--gold);">Extra ${fmtMoney(b.overpaid)}</div>${p.dateAdded?`<div style="font-size:11px; opacity:.55; margin-top:2px;">${fmtDate(p.dateAdded)}</div>`:''}</div>`;
+    } else if(b.balance<=0){
+      amountHtml = `<div style="text-align:right;"><div class="mono" style="font-weight:800; font-size:15px; color:var(--teal);">${payable?'Ada Ho Gaya':'Paid'}</div>${p.dateAdded?`<div style="font-size:11px; opacity:.55; margin-top:2px;">${fmtDate(p.dateAdded)}</div>`:''}</div>`;
+    } else if(payable){
+      amountHtml = `<div style="text-align:right;"><div class="mono" style="font-weight:800; font-size:15px; color:var(--teal);">${fmtMoney(b.balance)}</div>${p.dateAdded?`<div style="font-size:11px; opacity:.55; margin-top:2px;">${fmtDate(p.dateAdded)}</div>`:''}</div>`;
+    } else {
+      amountHtml = `<div style="text-align:right;"><div class="mono" style="font-weight:800; font-size:15px; color:var(--brick);">${fmtMoney(b.balance)}</div>${p.dateAdded?`<div style="font-size:11px; opacity:.55; margin-top:2px;">${fmtDate(p.dateAdded)}</div>`:''}</div>`;
+    }
     return `<div class="party-item" onclick="openParty(${p.id})">
       <div class="row-between" style="align-items:flex-start;">
         <div>
@@ -2713,7 +2773,7 @@ function renderPartiesList(){
         </div>
         <div style="display:flex; align-items:flex-start; gap:8px;">
           ${p.atRisk ? `<span class="stamp" style="color:var(--brick); border-color:var(--brick);">🚩 At Risk</span>` : ''}
-          ${stampHtml}
+          ${amountHtml}
           <button class="icon-btn" title="Party edit karein" onclick="event.stopPropagation(); openEditPartyModal(${p.id})">✏️</button>
         </div>
       </div>
@@ -2936,6 +2996,38 @@ function renderReports(){
     }).join('');
   }
 
+  const stmtBox = document.getElementById('partyStatementsList');
+  if(stmtBox){
+    if(parties.length===0){
+      stmtBox.innerHTML = '<div class="empty">No parties yet.</div>';
+    } else {
+      stmtBox.innerHTML = parties.map(p=>{
+        const b = partyBalance(p.id);
+        const paid = b.balance<=0;
+        const payCount = payments.filter(x=>x.partyId===p.id).length;
+        return `<div class="party-item" style="cursor:default; margin-bottom:10px;">
+          <div class="row-between" style="align-items:flex-start; margin-bottom:8px;">
+            <div>
+              <div class="pname">${p.name}</div>
+              <div class="pmeta">${p.item||''} · ${fmtMoney(p.totalAmount)} · ${payCount} payments</div>
+              ${p.phone ? `<div class="pmeta">📞 ${p.phone}</div>` : ''}
+              ${p.dateAdded ? `<div class="pmeta">🗓️ ${fmtDate(p.dateAdded)}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <div class="mono" style="font-weight:800; font-size:15px; color:${paid?'var(--teal)':'var(--brick)'};">${paid?'Paid':fmtMoney(b.balance)}</div>
+              <div style="font-size:11px; opacity:.55; margin-top:2px;">Recovery ${fmtMoney(b.totalPaid)}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="openParty(${p.id})">👁 Open</button>
+            <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="downloadPartyPDF(${p.id})">📄 PDF</button>
+            <button class="btn btn-outline-teal btn-sm" style="flex:1;" onclick="downloadPartyCSV(${p.id})">📊 CSV</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
   renderWeekBarChart();
 }
 function renderWeekBarChart(){
@@ -2945,7 +3037,7 @@ function renderWeekBarChart(){
   const days = [];
   for(let i=6;i>=0;i--){
     const d = new Date(); d.setDate(d.getDate()-i);
-    days.push(d.toISOString().slice(0,10));
+    days.push(toLocalDateStr(d));
   }
   const receivableIds = new Set(parties.filter(p=>!isPayable(p)).map(p=>p.id));
   const payableIds = new Set(parties.filter(p=>isPayable(p)).map(p=>p.id));
@@ -3472,10 +3564,31 @@ function setupInactivityWatch(){
 
 document.addEventListener('DOMContentLoaded', initAuth);
 
-/* ---- PWA: register service worker (offline cache + installable app) ---- */
+/* ---- PWA: register service worker + auto-update every ~3s ---- */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(err=>console.warn('SW register failed:', err));
+    navigator.serviceWorker.register('sw.js').then((reg)=>{
+      reg.update().catch(()=>{});
+      setInterval(()=>reg.update().catch(()=>{}), 3*1000);
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState === 'visible') reg.update().catch(()=>{});
+      });
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            newWorker.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+    }).catch(err=>console.warn('SW register failed:', err));
+    let refreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(refreshed) return;
+      refreshed = true;
+      window.location.reload();
+    });
   });
 }
 </script>
