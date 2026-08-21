@@ -498,7 +498,7 @@
       <div class="card">
         <div style="font-weight:600; font-size:13px; margin-bottom:6px;">Manual Backup</div>
         <div style="font-size:11px; opacity:.6; margin-bottom:2px;" id="lastBackupInfo">No email backup done yet</div>
-        <div style="font-size:11px; opacity:.55; margin-bottom:10px;">You'll get a reminder once a day — backup <b class="mono">gulishopinstallment@gmail.com</b> par jaata hai</div>
+        <div style="font-size:11px; opacity:.55; margin-bottom:10px;">Email backup: share sheet se <b>Gmail</b> choose karein — file attachment ke sath jayegi. Address: <b class="mono">gulishopinstallment@gmail.com</b></div>
         <button class="btn btn-teal btn-block" style="margin-bottom:8px;" onclick="exportJSON()">⬇ Download JSON Backup</button>
         <button class="btn btn-outline-teal btn-block" style="margin-bottom:8px;" onclick="emailBackupJSON()">✉️ Send Backup via Email</button>
         <button class="btn btn-outline btn-block" onclick="document.getElementById('importFile').click()">⬆ Restore From Backup</button>
@@ -2091,44 +2091,56 @@ function emailBackupJSON(){
   const filename = 'guli-shop-backup-' + todayStr() + '.json';
   const jsonText = JSON.stringify({parties,payments,stock,expenses,accounts,adjustments}, null, 2);
   const blob = new Blob([jsonText], {type:'application/json'});
-  const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments, ' + stock.length + ' stock items, ' + expenses.length + ' kharcha entries (' + todayStr() + ')';
+  const shareText = 'Guli Shop backup — ' + parties.length + ' parties, ' + payments.length + ' payments, ' + stock.length + ' stock, ' + expenses.length + ' kharcha (' + todayStr() + ')\n\nTo: ' + BACKUP_EMAIL;
   markBackupDoneToday();
 
-  // Reliable fallback: browsers can't attach a file to a mailto: link, so
-  // download the backup file first, then open the phone's email app with
-  // the subject/body ready — user just attaches the downloaded file.
-  function fallbackDownloadAndMail(){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-    const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
-    const body = encodeURIComponent(shareText + '\n\nBackup file "' + filename + '" download ho chuki hai — is email mein attach kar dein.');
-    window.location.href = 'mailto:' + BACKUP_EMAIL + '?subject=' + subject + '&body=' + body;
-    showToast('Backup downloaded — attach it in the email');
+  // Browser mailto: kabhi file attach nahi kar sakta (OS limit).
+  // Strategy: (1) file hamesha download (2) Share sheet se Gmail choose
+  // karein — tab attachment saath jati hai (3) warna mailto + manual attach.
+
+  function downloadFile(){
+    try{
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ try{ document.body.removeChild(a); URL.revokeObjectURL(url); }catch(e){} }, 1500);
+    }catch(e){}
   }
 
-  // Pehle system share sheet try karte hain (agar available ho). Pehle
-  // isi jagah ".catch(()=>{})" tha jo har tarah ki nakami ko chup-chap
-  // nigal jata tha — is se tap karne par kabhi kabhi bilkul koi response
-  // nahi milta tha. Ab agar share fail/unsupported ho to hamesha
-  // reliable download+mailto fallback chalega, taake tap par kuch-na-kuch
-  // zaroor ho.
-  try{
-    const file = new File([blob], filename, {type:'application/json'});
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      navigator.share({files:[file], title:'Guli Shop Backup', text:shareText})
-        .then(()=>showToast('Backup shared'))
-        .catch(err=>{
-          if(err && err.name === 'AbortError') return; // user ne khud cancel kiya
-          fallbackDownloadAndMail();
-        });
-      return;
-    }
-  }catch(e){ /* share API available nahi ya error — neeche fallback chalega */ }
+  function tryShareWithFile(){
+    try{
+      const file = new File([blob], filename, {type:'application/json'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        return navigator.share({ files:[file], title:'Guli Shop Backup', text:shareText })
+          .then(()=>{ showToast('Share sheet — Gmail choose karein ✅'); return true; })
+          .catch(err=>{
+            if(err && err.name === 'AbortError') return true;
+            return false;
+          });
+      }
+    }catch(e){}
+    return Promise.resolve(false);
+  }
 
-  fallbackDownloadAndMail();
+  function openMailto(){
+    const subject = encodeURIComponent('Guli Shop Backup — ' + todayStr());
+    const body = encodeURIComponent(
+      shareText +
+      '\n\n---\nFile "' + filename + '" Downloads mein save hai.\n' +
+      'Gmail: 📎 Attach → Downloads → yeh file select karein.\n' +
+      '(Browser khud attachment nahi bhej sakta.)'
+    );
+    window.location.href = 'mailto:' + BACKUP_EMAIL + '?subject=' + subject + '&body=' + body;
+    showToast('File download ho gayi — email mein 📎 se attach karein');
+  }
+
+  downloadFile();
+  tryShareWithFile().then(ok=>{
+    if(!ok) setTimeout(openMailto, 400);
+  });
 }
 function importJSON(file){
   if(!file) return;
@@ -3460,36 +3472,10 @@ function setupInactivityWatch(){
 
 document.addEventListener('DOMContentLoaded', initAuth);
 
-/* ---- PWA: register service worker (offline cache + installable app) ----
-   Auto-detects a newer version every ~3 seconds and activates + reloads
-   immediately, instead of waiting for the app to be closed and reopened. */
+/* ---- PWA: register service worker (offline cache + installable app) ---- */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').then((reg)=>{
-      reg.update().catch(()=>{});
-      setInterval(()=>reg.update().catch(()=>{}), 3*1000);
-
-      document.addEventListener('visibilitychange', ()=>{
-        if(document.visibilityState === 'visible') reg.update().catch(()=>{});
-      });
-
-      reg.addEventListener('updatefound', ()=>{
-        const newWorker = reg.installing;
-        if(!newWorker) return;
-        newWorker.addEventListener('statechange', ()=>{
-          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-            newWorker.postMessage('SKIP_WAITING');
-          }
-        });
-      });
-    }).catch(err=>console.warn('SW register failed:', err));
-
-    let refreshed = false;
-    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-      if(refreshed) return;
-      refreshed = true;
-      window.location.reload();
-    });
+    navigator.serviceWorker.register('sw.js').catch(err=>console.warn('SW register failed:', err));
   });
 }
 </script>
